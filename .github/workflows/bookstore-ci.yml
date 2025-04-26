@@ -33,7 +33,6 @@ jobs:
 
       - name: Run Unit Tests
         run: npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
-        continue-on-error: true
 
       - name: Upload Unit Test Results
         if: always()
@@ -68,20 +67,41 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium firefox webkit
 
+      - name: Check and Kill Port 4200
+        run: |
+          lsof -ti:4200 | xargs kill -9 || true
+
       - name: Start Angular App in Background
         run: |
           npm start &
-          sleep 30
+          echo "Waiting for Angular app to start..."
+          while ! nc -z localhost 4200; do   
+            sleep 1
+          done
+          echo "Angular app is running"
 
       - name: Run Mock Tests
         working-directory: playwright-tests
-        run: npm run mock
-        continue-on-error: true
+        run: |
+          npm run mock
+          if [ $? -ne 0 ]; then
+            echo "Mock tests failed"
+            exit 1
+          fi
 
       - name: Run Feature Tests
         working-directory: playwright-tests
-        run: npm run feature
-        continue-on-error: true
+        run: |
+          npm run feature
+          if [ $? -ne 0 ]; then
+            echo "Feature tests failed"
+            exit 1
+          fi
+
+      - name: Generate Cucumber Report
+        if: always()
+        working-directory: playwright-tests
+        run: npm run open:report
 
       - name: Upload Playwright Report
         if: always()
@@ -96,8 +116,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report
-          path: playwright-tests/reports/cucumber/
+          path: |
+            playwright-tests/reports/cucumber-html-report/
+            playwright-tests/reports/cucumber/cucumber-report.json
           if-no-files-found: warn
+
+      - name: Stop Angular App
+        if: always()
+        run: |
+          lsof -ti:4200 | xargs kill -9 || true
 
   publish-report:
     needs: [build-and-test, playwright-tests]
@@ -113,28 +140,62 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Create Report Directory
+        run: |
+          mkdir -p test-results
+          mkdir -p test-results/playwright
+          mkdir -p test-results/cucumber
 
       - name: Download Playwright Report
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
-          path: test-results/playwright-report
+          path: test-results/playwright
 
       - name: Download Cucumber Report
         uses: actions/download-artifact@v4
         with:
           name: cucumber-report
-          path: test-results/cucumber-report
+          path: test-results/cucumber
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Create index.html
+        run: |
+          cat > test-results/index.html << 'EOL'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Test Reports</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              .report-link {
+                display: block;
+                margin: 20px 0;
+                padding: 15px;
+                background-color: #f0f0f0;
+                border-radius: 5px;
+                text-decoration: none;
+                color: #333;
+              }
+              .report-link:hover {
+                background-color: #e0e0e0;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Test Reports</h1>
+            <a class="report-link" href="./playwright/index.html">Playwright Test Report</a>
+            <a class="report-link" href="./cucumber/cucumber-html-report/index.html">Cucumber Test Report</a>
+          </body>
+          </html>
+          EOL
+
       - name: Upload Reports to Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: test-results/
+          path: test-results
 
       - name: Deploy to GitHub Pages
         id: deployment
