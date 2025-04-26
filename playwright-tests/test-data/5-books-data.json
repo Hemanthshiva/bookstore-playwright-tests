@@ -1,0 +1,50 @@
+[
+  {
+    "bookId": 39,
+    "title": "Before We Were Yours",
+    "author": "Lisa Wingate ",
+    "category": "Romance",
+    "price": 123,
+    "coverFileName": "15396272-e3ec-4b1c-97d0-d2e841898f55aa.jpg"
+  },
+  {
+    "bookId": 45,
+    "title": "The Martian",
+    "author": "Andy Weir",
+    "category": "Fantasy",
+    "price": 321,
+    "coverFileName": "5b7162d6-2780-461b-be6f-e4debac083ad18007564.jpg"
+  },
+  {
+    "bookId": 46,
+    "title": "Catching Fire",
+    "author": "Suzanne Collins",
+    "category": "Mystery",
+    "price": 658,
+    "coverFileName": "6df4a30a-e8a1-467d-9da6-d826989a9c606148028.jpg"
+  },
+  {
+    "bookId": 72,
+    "title": "City of Girls",
+    "author": "Elizabeth Gilbert ",
+    "category": "Fiction",
+    "price": 1222,
+    "coverFileName": "e94cf1e2-a7bf-47e1-aed8-b8931aeee6b342135029.jpg"
+  },
+  {
+    "bookId": 85,
+    "title": "All of Us with Wings",
+    "author": "Michelle Ruiz Keil ",
+    "category": "Fantasy",
+    "price": 555,
+    "coverFileName": "3618116f-ba09-4172-bc6a-7aa2dbe7d7c4qq.jpg"
+  },
+  {
+    "bookId": 90,
+    "title": "7/1/1993",
+    "author": "qwert",
+    "category": "Fiction",
+    "price": 123,
+    "coverFileName": "Default_image.jpg"
+  }
+]

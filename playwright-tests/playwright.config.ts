@@ -8,7 +8,7 @@ export default defineConfig({
     testDir: './src/tests',
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: process.env.CI ? 1 : 0,
     workers: process.env.CI ? 1 : undefined,
     reporter: [
         ['list'],
@@ -47,7 +47,7 @@ export default defineConfig({
         // }
     ],
     webServer: {
-        command: 'cd .. && ng build && ng serve',
+        command: 'cd .. && ng serve',
         port: 4200,
         timeout: 120000, // 2 minutes timeout for build and serve
         reuseExistingServer: !process.env.CI,

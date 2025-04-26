@@ -67,17 +67,10 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      # - name: Start Angular App in Background
+      # - name: Kill any existing process on port 4200
       #   run: |
-      #     nohup npm start > angular.log 2>&1 &
-      #     echo "Waiting for Angular app to start..."
-      #     timeout 60s bash -c 'until nc -z localhost 4200; do sleep 2; done' || (echo "Angular app failed to start" && exit 1)
-      #     echo "Angular app is running"
-
-      - name: Kill any existing process on port 4200
-        run: |
-          sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
-          sleep 2
+      #     sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
+      #     sleep 2
 
       - name: Run Mock Tests
         working-directory: playwright-tests
@@ -89,12 +82,6 @@ jobs:
             exit 1
           }
 
-      - name: Prepare Feature Test Environment
-        working-directory: playwright-tests
-        run: |
-          mkdir -p reports/cucumber
-          mkdir -p reports/cucumber-html-report
-
       - name: Run Feature Tests
         working-directory: playwright-tests
         env:
@@ -105,34 +92,27 @@ jobs:
           echo "Running feature tests..."
           npm run feature:chrome || {
             echo "Feature tests failed"
-            cat reports/cucumber/cucumber-report.json || true
             exit 1
           }
 
-      - name: Generate Cucumber Report
+      - name: Generate Test Reports
         if: always()
         working-directory: playwright-tests
         run: |
-          echo "Generating Cucumber report..."
-          ls -la reports/cucumber/
+          echo "Generating reports..."
           npm run open:report || true
+          ls -R reports/ || true
+          ls -R playwright-report/ || true
 
-      - name: Upload Playwright Report
+      - name: Upload All Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-tests/playwright-report/
-          if-no-files-found: warn
-
-      - name: Upload Cucumber Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-report
+          name: test-reports
           path: |
-            playwright-tests/reports/cucumber-html-report/
-            playwright-tests/reports/cucumber/
+            playwright-tests/playwright-report/
+            playwright-tests/reports/
+            playwright-tests/test-results/
           if-no-files-found: warn
 
       - name: Upload Angular Logs
@@ -168,17 +148,17 @@ jobs:
           mkdir -p test-results/playwright
           mkdir -p test-results/cucumber
 
-      - name: Download Playwright Report
+      - name: Download Test Reports
         uses: actions/download-artifact@v4
         with:
-          name: playwright-report
-          path: test-results/playwright
+          name: test-reports
+          path: downloaded-reports
 
-      - name: Download Cucumber Report
-        uses: actions/download-artifact@v4
-        with:
-          name: cucumber-report
-          path: test-results/cucumber
+      - name: Organize Reports
+        run: |
+          cp -r downloaded-reports/playwright-report/* test-results/playwright/ || true
+          cp -r downloaded-reports/reports/* test-results/cucumber/ || true
+          ls -R test-results/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -12,7 +12,6 @@ report-generator/cucumber-report-transformed.json
 
 # Screenshots and test artifacts
 *.png
-test-data/
 
 # Environment files
 .env
