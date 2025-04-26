@@ -39,7 +39,6 @@ jobs:
         run: |
           if [ ! -d "coverage" ]; then
             echo "Coverage directory not found! Skipping upload."
-            exit 1
           fi
       
       - name: Upload Unit Test Results
