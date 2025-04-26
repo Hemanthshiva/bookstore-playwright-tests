@@ -16,14 +16,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '19.x'
+          node-version: '20.x'
           cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Clean Install Dependencies
+        run: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
+          npm install
+
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli@19.2.9
 
       - name: Build Application
-        run: npm run build
+        run: npm run build -- --configuration=production
 
       - name: Run Unit Tests
         run: npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
@@ -51,7 +57,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '19.x'
+          node-version: '20.x'
           cache: 'npm'
           cache-dependency-path: 'playwright-tests/package.json'
 
