@@ -67,41 +67,55 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium firefox webkit
 
-      - name: Check and Kill Port 4200
+      - name: Kill any existing process on port 4200
         run: |
-          lsof -ti:4200 | xargs kill -9 || true
+          sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
+          sleep 2
 
       - name: Start Angular App in Background
         run: |
-          npm start &
+          nohup npm start > angular.log 2>&1 &
           echo "Waiting for Angular app to start..."
-          while ! nc -z localhost 4200; do   
-            sleep 1
-          done
+          timeout 60s bash -c 'until nc -z localhost 4200; do sleep 2; done' || (echo "Angular app failed to start" && exit 1)
           echo "Angular app is running"
 
       - name: Run Mock Tests
         working-directory: playwright-tests
+        env:
+          PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          npm run mock
-          if [ $? -ne 0 ]; then
+          npm run mock || {
             echo "Mock tests failed"
             exit 1
-          fi
+          }
+
+      - name: Prepare Feature Test Environment
+        working-directory: playwright-tests
+        run: |
+          mkdir -p reports/cucumber
+          mkdir -p reports/cucumber-html-report
 
       - name: Run Feature Tests
         working-directory: playwright-tests
+        env:
+          PLAYWRIGHT_REUSE_SERVER: "true"
+          NODE_ENV: "test"
+          BROWSER: "chromium"
         run: |
-          npm run feature
-          if [ $? -ne 0 ]; then
+          echo "Running feature tests..."
+          npm run feature:chrome || {
             echo "Feature tests failed"
+            cat reports/cucumber/cucumber-report.json || true
             exit 1
-          fi
+          }
 
       - name: Generate Cucumber Report
         if: always()
         working-directory: playwright-tests
-        run: npm run open:report
+        run: |
+          echo "Generating Cucumber report..."
+          ls -la reports/cucumber/
+          npm run open:report || true
 
       - name: Upload Playwright Report
         if: always()
@@ -118,13 +132,21 @@ jobs:
           name: cucumber-report
           path: |
             playwright-tests/reports/cucumber-html-report/
-            playwright-tests/reports/cucumber/cucumber-report.json
+            playwright-tests/reports/cucumber/
           if-no-files-found: warn
+
+      - name: Upload Angular Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-logs
+          path: angular.log
 
       - name: Stop Angular App
         if: always()
         run: |
-          lsof -ti:4200 | xargs kill -9 || true
+          sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
+          sleep 2
 
   publish-report:
     needs: [build-and-test, playwright-tests]
