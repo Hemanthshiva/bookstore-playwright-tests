@@ -7,7 +7,7 @@
 /bazel-out
 
 # Node
-/node_modules
+node_modules/
 npm-debug.log
 yarn-error.log
 
@@ -40,3 +40,28 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Playwright specific
+playwright-tests/test-results/
+playwright-tests/.cache/
+playwright-tests/playwright-report/
+playwright-tests/blob-report/
+playwright-tests/artifacts/
+playwright-tests/screenshots/
+playwright-tests/videos/
+playwright-tests/traces/
+playwright-tests/allure-results/
+playwright-tests/allure-report/
+playwright-tests/.auth/
+playwright-tests/storageState.json
+playwright-tests/node_modules/
+playwright-tests/reports/
+
+# Mock data and environment-specific files
+playwright-tests/mock-data/*.js.map
+playwright-tests/mock-data/*.d.ts
+*.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
