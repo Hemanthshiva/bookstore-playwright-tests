@@ -10,7 +10,7 @@
     "feature:chrome": "cross-env BROWSER=chromium npm run feature",
     "feature:firefox": "cross-env BROWSER=firefox npm run feature",
     "feature:webkit": "cross-env BROWSER=webkit npm run feature",
-    "mock": "playwright test src/tests/mock-tests/ --workers=1",
+    "mock": "playwright test src/tests/mock-tests/",
     "mock:debug": "playwright test src/tests/mock-tests/ --debug",
     "mock:ui": "playwright test src/tests/mock-tests/ --ui",
     "mock:headed": "playwright test src/tests/mock-tests/ --headed --workers=1",
