@@ -10,12 +10,13 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '19.x'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -30,7 +31,7 @@ jobs:
 
       - name: Upload Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: coverage/
@@ -44,21 +45,22 @@ jobs:
         working-directory: playwright-tests
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '19.x'
           cache: 'npm'
           cache-dependency-path: 'playwright-tests/package.json'
 
       - name: Install Playwright Dependencies
         run: |
           npm ci
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium firefox webkit
 
-      - name: Run Playwright Tests
+      - name: Run Mock Tests
         run: npm run mock
         continue-on-error: true
 
@@ -66,43 +68,59 @@ jobs:
         run: npm run feature
         continue-on-error: true
 
-      - name: Upload Test Results
+      - name: Upload Playwright Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results
-          path: |
-            playwright-report/
-            test-results/
-            reports/cucumber/
+          name: playwright-report
+          path: playwright-tests/playwright-report/
+          if-no-files-found: warn
+
+      - name: Upload Cucumber Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: playwright-tests/reports/cucumber/
           if-no-files-found: warn
 
   publish-report:
     needs: [build-and-test, playwright-tests]
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
+      - name: Download Playwright Report
+        uses: actions/download-artifact@v4
         with:
-          name: Test Results
-          path: '**/*.xml'
-          reporter: java-junit
-          fail-on-error: false
+          name: playwright-report
+          path: test-results/playwright-report
 
-      - name: Upload Combined Report
-        if: always()
-        uses: actions/upload-artifact@v3
+      - name: Download Cucumber Report
+        uses: actions/download-artifact@v4
         with:
-          name: test-report
-          path: |
-            **/test-report/
-            **/reports/
-          if-no-files-found: warn
+          name: cucumber-report
+          path: test-results/cucumber-report
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Reports to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test-results/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
