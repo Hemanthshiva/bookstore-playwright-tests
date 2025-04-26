@@ -1,0 +1,86 @@
+<div class="page-container" data-testid="book-list-container">
+  <!-- Category sidebar -->
+  <div class="sidebar" data-testid="category-sidebar">
+    <mat-nav-list data-testid="category-list">
+      <h3 matSubheader data-testid="categories-header">Categories</h3>
+      <mat-list-item 
+         data-testid="category-all"
+         [class.active]="!selectedCategory"
+         (click)="onCategorySelect(null)"
+         (keydown)="onCategorySelect(null)">
+        All Categories
+      </mat-list-item>
+      <mat-list-item 
+         *ngFor="let category of categories"
+         [attr.data-testid]="'category-item-' + category"
+         [class.active]="selectedCategory === category"
+         (click)="onCategorySelect(category)"
+         (keydown)="onCategorySelect(category)">
+        {{category}}
+      </mat-list-item>
+    </mat-nav-list>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content" data-testid="main-content">
+    <!-- Search input -->
+    <mat-form-field class="search-field" data-testid="search-field">
+      <mat-label>Search books</mat-label>
+      <input matInput 
+        data-testid="search-input"
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="onSearch($event)" 
+        placeholder="Search by title or author">
+    </mat-form-field>
+
+    <!-- Error message -->
+    <div *ngIf="error" class="error-message" data-testid="error-message">
+      {{ error }}
+    </div>
+
+    <!-- Loading spinner -->
+    <div *ngIf="isLoading" class="loading-container" data-testid="loading-spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- Books grid -->
+    <div class="book-container" *ngIf="!isLoading && !error" data-testid="books-grid">
+      <mat-card 
+        *ngFor="let book of books" 
+        class="book-card" 
+        [routerLink]="['/books', book.bookId]"
+        [attr.data-testid]="'book-card-' + book.bookId">
+        <mat-card-header>
+          <mat-card-title data-testid="book-title">{{ book.title }}</mat-card-title>
+          <mat-card-subtitle data-testid="book-author">{{ book.author }}</mat-card-subtitle>
+        </mat-card-header>
+        <img
+          mat-card-image
+          [src]="'https://bookcart.azurewebsites.net/Upload/' + book.coverFileName"
+          [attr.data-testid]="'book-cover-' + book.bookId"
+          alt="{{ book.title }}"
+        />
+        <mat-card-content>
+          <p data-testid="book-category">Category: {{ book.category }}</p>
+          <p data-testid="book-price">Price: £{{ book.price }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- No results message -->
+    <div *ngIf="!isLoading && !error && books.length === 0" class="no-results" data-testid="no-results">
+      No books found.
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator
+      *ngIf="totalBooks > 0"
+      data-testid="paginator"
+      [length]="totalBooks"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)"
+      aria-label="Select page">
+    </mat-paginator>
+  </div>
+</div>

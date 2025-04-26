@@ -1,0 +1,53 @@
+{
+  "name": "playwright-bdd-demo-fw",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "feature": "cucumber-js --config ./config/cucumber.js --format json:reports/cucumber/cucumber-report.json --format summary",
+    "open:report": "node report-generator/cucumber-report.js",
+    "test:report": "npm run feature && npm run report",
+    "feature:chrome": "cross-env BROWSER=chromium npm run feature",
+    "feature:firefox": "cross-env BROWSER=firefox npm run feature",
+    "feature:webkit": "cross-env BROWSER=webkit npm run feature",
+    "mock": "playwright test src/tests/mock-tests/ --workers=1",
+    "mock:debug": "playwright test src/tests/mock-tests/ --debug",
+    "mock:ui": "playwright test src/tests/mock-tests/ --ui",
+    "mock:headed": "playwright test src/tests/mock-tests/ --headed --workers=1",
+    "mock:report": "playwright show-report",
+    "postmock": "npx kill-port 4200",
+    "test:all": "npm run mock && npm run feature",
+    "open:reports": "npm run open:report && npm run mock:report"
+  },
+  "keywords": [],
+  "author": "Hemanth Shivashankarappa",
+  "license": "ISC",
+  "description": "Automated testing suite for the bookstore application using Playwright and Cucumber for end-to-end testing",
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.2.0",
+    "@cucumber/html-formatter": "^20.4.0",
+    "@cucumber/pretty-formatter": "^1.0.0",
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.5.0",
+    "multiple-cucumber-html-reporter": "^3.6.1",
+    "open": "^8.4.2",
+    "ts-node": "^10.9.2"
+  },
+  "cucumber": {
+    "require": [
+      "src/tests/step-definitions/**/*.ts",
+      "src/support/**/*.ts"
+    ],
+    "requireModule": [
+      "ts-node/register"
+    ],
+    "paths": [
+      "src/tests/features/*.feature"
+    ]
+  },
+  "dependencies": {
+    "kill-port": "^2.0.1"
+  }
+}

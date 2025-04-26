@@ -1,0 +1,86 @@
+.page-container {
+  display: flex;
+  height: 100%;
+  gap: 24px;
+}
+
+.sidebar {
+  width: 250px;
+  background: #fff;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  padding-top: 16px;
+
+  h3 {
+    margin: 0;
+    padding: 16px;
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 14px;
+  }
+
+  mat-list-item {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    &.active {
+      background: rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 24px;
+}
+
+.book-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.book-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  img {
+    height: 300px;
+    object-fit: cover;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.error-message {
+  color: #f44336;
+  padding: 16px;
+  text-align: center;
+}
+
+.no-results {
+  text-align: center;
+  padding: 48px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+mat-paginator {
+  margin-top: 24px;
+}

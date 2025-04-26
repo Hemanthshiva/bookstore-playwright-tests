@@ -1,0 +1,18 @@
+{
+    "cucumberautocomplete.steps": [
+        "playwright-tests/src/step-definitions/*.ts"
+    ],
+    "cucumber.features": [
+        "playwright-tests/src/tests/features/*.feature"
+    ],
+    "cucumber.glue": [
+        "playwright-tests/src/step-definitions/*.ts",
+        "playwright-tests/src/support/*.ts"
+    ],
+    "cucumberautocomplete.syncfeatures": true,
+    "cucumberautocomplete.formatConfOverride": {
+        "Feature": {
+            "before": ["@"]
+        }
+    }
+}

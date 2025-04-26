@@ -1,0 +1,46 @@
+<div class="book-details-container" data-testid="book-details-container">
+  <!-- Back button -->
+  <button mat-button class="back-button" (click)="goBack()" data-testid="back-button">
+    <mat-icon class="back-icon">arrow_back</mat-icon>
+    <span>Back to Books</span>
+  </button>
+
+  <ng-container *ngIf="book$ | async as state">
+    <!-- Loading spinner -->
+    <div *ngIf="state.loading" class="loading-container" data-testid="loading-spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="state.error" class="error-message" data-testid="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ state.error }}</p>
+      <button mat-raised-button color="primary" (click)="goBack()" data-testid="return-button">
+        Return to Book List
+      </button>
+    </div>
+
+    <!-- Book details -->
+    <mat-card *ngIf="state.data && !state.loading && !state.error" class="book-details" data-testid="book-details-card">
+      <mat-card-header>
+        <mat-card-title data-testid="book-title">{{ state.data.title }}</mat-card-title>
+        <mat-card-subtitle data-testid="book-author">{{ state.data.author }}</mat-card-subtitle>
+      </mat-card-header>
+      
+      <div class="content-wrapper" data-testid="content-wrapper">
+        <img
+          class="book-cover"
+          data-testid="book-cover"
+          [src]="'https://bookcart.azurewebsites.net/Upload/' + state.data.coverFileName"
+          [alt]="state.data.title"
+        />
+        
+        <mat-card-content class="book-info" data-testid="book-info">
+          <p data-testid="book-category"><strong>Category:</strong> {{ state.data.category }}</p>
+          <p data-testid="book-price"><strong>Price:</strong> ${{ state.data.price }}</p>
+          <p data-testid="book-id"><strong>Book ID:</strong> {{ state.data.bookId }}</p>
+        </mat-card-content>
+      </div>
+    </mat-card>
+  </ng-container>
+</div>

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pages/*": ["src/pages/*"],
+      "@tests/*": ["src/tests/*"],
+      "@features/*": ["src/tests/features/*"],
+      "@step-definitions/*": ["src/step-definitions/*"],
+      "@support/*": ["src/support/*"]
+    },
+    "outDir": "./dist",
+    "sourceMap": true,
+    "types": ["node", "@playwright/test", "@cucumber/cucumber"]
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "playwright.config.ts",
+    "global-teardown.ts",
+    "cucumber.js"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
