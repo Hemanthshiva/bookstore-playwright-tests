@@ -65,19 +65,19 @@ jobs:
         working-directory: playwright-tests
         run: |
           npm ci
-          npx playwright install --with-deps chromium firefox webkit
+          npx playwright install --with-deps chromium
+
+      # - name: Start Angular App in Background
+      #   run: |
+      #     nohup npm start > angular.log 2>&1 &
+      #     echo "Waiting for Angular app to start..."
+      #     timeout 60s bash -c 'until nc -z localhost 4200; do sleep 2; done' || (echo "Angular app failed to start" && exit 1)
+      #     echo "Angular app is running"
 
       - name: Kill any existing process on port 4200
         run: |
           sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
           sleep 2
-
-      - name: Start Angular App in Background
-        run: |
-          nohup npm start > angular.log 2>&1 &
-          echo "Waiting for Angular app to start..."
-          timeout 60s bash -c 'until nc -z localhost 4200; do sleep 2; done' || (echo "Angular app failed to start" && exit 1)
-          echo "Angular app is running"
 
       - name: Run Mock Tests
         working-directory: playwright-tests
