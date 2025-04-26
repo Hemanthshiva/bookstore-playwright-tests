@@ -19,13 +19,11 @@ jobs:
         with:
           node-version: "18.x"
           cache: "npm"
+          cache-dependency-path: package.json
 
-      # Install dependencies
+      # Install dependencies for main app
       - name: Install Dependencies
-        run: |
-          npm install
-          npx playwright install
-          npx playwright install-deps
+        run: npm install
 
       # Build the application
       - name: Build Application
@@ -58,7 +56,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         shard: [1/3, 2/3, 3/3]
-
+    defaults:
+      run:
+        working-directory: playwright-tests
     steps:
       - uses: actions/checkout@v3
 
@@ -67,9 +67,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18.x"
-          cache: "npm"
-
-      # Install dependencies
+          cache: "npm"          
+          cache-dependency-path: playwright-tests/package.json
+      # Install dependencies for Playwright tests
       - name: Install Dependencies
         run: |
           npm install
