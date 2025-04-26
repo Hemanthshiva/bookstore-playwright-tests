@@ -35,7 +35,13 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
-      # Upload unit test results
+      - name: Check Coverage Directory
+        run: |
+          if [ ! -d "coverage" ]; then
+            echo "Coverage directory not found! Skipping upload."
+            exit 1
+          fi
+      
       - name: Upload Unit Test Results
         if: always()
         uses: actions/upload-artifact@v3
@@ -79,7 +85,13 @@ jobs:
       - name: Run Feature Tests
         run: npm run cucumber
 
-      # Upload Playwright test results
+      - name: Check Playwright Report Directory
+        run: |
+          if [ ! -d "playwright-report" ] || [ ! -d "test-results" ]; then
+            echo "Playwright report or test results directory not found! Skipping upload."
+            exit 1
+          fi
+      
       - name: Upload Playwright Test Results
         if: always()
         uses: actions/upload-artifact@v3
