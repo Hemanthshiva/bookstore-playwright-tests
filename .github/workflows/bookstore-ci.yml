@@ -45,6 +45,10 @@ jobs:
   playwright-tests:
     needs: build-and-test
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/2, 2/2]
 
     steps:
       - name: Checkout
@@ -67,17 +71,12 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      # - name: Kill any existing process on port 4200
-      #   run: |
-      #     sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
-      #     sleep 2
-
       - name: Run Mock Tests
         working-directory: playwright-tests
         env:
           PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          npm run mock || {
+          npm run mock -- --shard=${{ matrix.shard }} || {
             echo "Mock tests failed"
             exit 1
           }
@@ -104,11 +103,11 @@ jobs:
           ls -R reports/ || true
           ls -R playwright-report/ || true
 
-      - name: Upload All Test Reports
+      - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: test-reports-${{ matrix.shard }}
           path: |
             playwright-tests/playwright-report/
             playwright-tests/reports/
@@ -119,7 +118,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: angular-logs
+          name: angular-logs-${{ matrix.shard }}
           path: angular.log
 
       - name: Stop Angular App
@@ -128,8 +127,38 @@ jobs:
           sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
           sleep 2
 
+  merge-reports:
+    needs: playwright-tests
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Create Report Directories
+        run: |
+          mkdir -p merged-reports/playwright
+          mkdir -p merged-reports/cucumber
+
+      - name: Download All Test Reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-reports-*
+          path: all-reports
+          merge-multiple: true
+
+      - name: Merge Reports
+        run: |
+          cp -r all-reports/playwright-report/* merged-reports/playwright/ || true
+          cp -r all-reports/reports/* merged-reports/cucumber/ || true
+
+      - name: Upload Merged Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-test-reports
+          path: merged-reports
+          if-no-files-found: warn
+
   publish-report:
-    needs: [build-and-test, playwright-tests]
+    needs: merge-reports
     runs-on: ubuntu-latest
     if: always()
     permissions:
@@ -148,16 +177,16 @@ jobs:
           mkdir -p test-results/playwright
           mkdir -p test-results/cucumber
 
-      - name: Download Test Reports
+      - name: Download Merged Reports
         uses: actions/download-artifact@v4
         with:
-          name: test-reports
+          name: merged-test-reports
           path: downloaded-reports
 
       - name: Organize Reports
         run: |
-          cp -r downloaded-reports/playwright-report/* test-results/playwright/ || true
-          cp -r downloaded-reports/reports/* test-results/cucumber/ || true
+          cp -r downloaded-reports/playwright/* test-results/playwright/ || true
+          cp -r downloaded-reports/cucumber/* test-results/cucumber/ || true
           ls -R test-results/
 
       - name: Setup Pages
@@ -188,7 +217,7 @@ jobs:
           </head>
           <body>
             <h1>Test Reports</h1>
-            <a class="report-link" href="./playwright/index.html">Playwright Test Report</a>
+            <a class="report-link" href="./playwright/index.html">Mock Test Report</a>
             <a class="report-link" href="./cucumber/cucumber-html-report/index.html">Cucumber Test Report</a>
           </body>
           </html>
