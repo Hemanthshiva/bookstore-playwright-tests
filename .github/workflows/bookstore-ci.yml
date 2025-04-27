@@ -88,10 +88,10 @@ jobs:
           npx playwright install --with-deps chromium
           npm install -g @playwright/test
 
-      - name: Start Angular Server
-        run: |
-          npm run start &
-          sleep 30
+      # - name: Start Angular Server
+      #   run: |
+      #     npm run start &
+      #     sleep 30
 
       - name: Run All Tests
         working-directory: playwright-tests
