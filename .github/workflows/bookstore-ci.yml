@@ -2,9 +2,9 @@ name: Bookstore WebApp CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: '20.x'
+          cache: 'npm'
 
       - name: Install Dependencies
         run: |
@@ -55,8 +55,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: '20.x'
+          cache: 'npm'
 
       - name: Install Root Dependencies
         run: |
@@ -100,6 +100,7 @@ jobs:
         with:
           name: test-results-${{ matrix.shard }}
           path: |
+            playwright-tests/test-results/
             playwright-tests/playwright-report/
             playwright-tests/reports/
           if-no-files-found: warn
@@ -128,7 +129,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: '20.x'
 
       - name: Install Playwright
         run: |
@@ -143,42 +144,50 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Debug Directory Structure
+      - name: Debug Directory Structure Before Merge
         run: |
-          echo "Current directory structure:"
+          echo "Downloaded reports structure:"
           ls -R downloaded-reports/
 
       - name: Prepare Merge Directories
         run: |
           mkdir -p merged-reports/playwright
           mkdir -p merged-reports/cucumber
+          mkdir -p temp-playwright-reports
 
       - name: Merge Playwright Reports
         run: |
-          # Create temp directory for merging
-          mkdir -p temp-playwright-reports
-
-          # Copy all Playwright reports to temp directory
-          if [ -d "downloaded-reports/playwright-report" ]; then
-            cp -r downloaded-reports/playwright-report/* temp-playwright-reports/
+          # First, find and copy all test result files
+          if [ -d "downloaded-reports/test-results" ]; then
+            find downloaded-reports/test-results -type f -name "*.zip" -exec cp {} temp-playwright-reports/ \;
           fi
-
-          # Merge reports if there are any
+          
+          # Then copy any trace files
+          if [ -d "downloaded-reports/playwright-report" ]; then
+            cp -r downloaded-reports/playwright-report/* temp-playwright-reports/ || true
+          fi
+          
+          echo "Content of temp-playwright-reports:"
+          ls -la temp-playwright-reports/
+          
+          # Only try to merge if we have files
           if [ "$(ls -A temp-playwright-reports)" ]; then
             npx playwright merge-reports --reporter html temp-playwright-reports
+            mkdir -p merged-reports/playwright
             cp -r playwright-report/* merged-reports/playwright/
+          else
+            echo "No Playwright reports found to merge"
           fi
 
       - name: Merge Cucumber Reports
         run: |
-          # Copy all Cucumber reports
           if [ -d "downloaded-reports/reports/cucumber" ]; then
-            cp -r downloaded-reports/reports/cucumber/* merged-reports/cucumber/
+            cp -r downloaded-reports/reports/cucumber/* merged-reports/cucumber/ || true
           fi
 
-      - name: Debug Merged Reports
+      - name: Debug Directory Structure After Merge
         run: |
-          echo "Merged reports directory structure:"
+          echo "Merged reports structure:"
           ls -R merged-reports/
 
       - name: Upload Merged Reports
@@ -207,9 +216,9 @@ jobs:
           name: merged-test-reports
           path: test-results
 
-      - name: Debug Downloaded Reports
+      - name: Debug Final Reports
         run: |
-          echo "Test results directory structure:"
+          echo "Final test results structure:"
           ls -R test-results/
 
       - name: Create index.html
