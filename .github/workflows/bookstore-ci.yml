@@ -6,6 +6,17 @@ on:
   pull_request:
     branches: [ main ]
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -43,11 +54,6 @@ jobs:
   playwright-tests:
     needs: build-and-test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,23 +78,21 @@ jobs:
       - name: Run All Tests
         working-directory: playwright-tests
         env:
-            PLAYWRIGHT_REUSE_SERVER: "true"
-            SHARD: ${{ matrix.shard }}
-            SHARD_COUNT: 2
+          PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-            # Create reports directory
-            mkdir -p reports/cucumber
-            mkdir -p reports/playwright
-            
-            # Run tests with proper sharding
-            npm run mock -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-            npm run feature:shard -- --shard=${{ matrix.shard }} --total-shards=${{ strategy.job-total }}
-           
+          # Create reports directory
+          mkdir -p reports/cucumber
+          mkdir -p reports/playwright
+          
+          # Run tests
+          npm run mock
+          npm run feature
+
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shard }}
+          name: playwright-report
           path: playwright-tests/playwright-report/
           if-no-files-found: warn
 
@@ -96,201 +100,119 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-report-${{ matrix.shard }}
+          name: cucumber-report
           path: playwright-tests/reports/cucumber/*.json
           if-no-files-found: warn
 
-
-  merge-reports:
+  deploy-reports:
     needs: playwright-tests
-    if: success() || failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-
-      - name: Install Dependencies
-        working-directory: playwright-tests
-        run: npm ci
-
-      - name: Create Report Directories
-        run: |
-          mkdir -p playwright-tests/merged-reports/playwright
-          mkdir -p playwright-tests/merged-reports/cucumber
-          mkdir -p playwright-tests/temp-reports
-
-      - name: Download Playwright HTML Reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: playwright-report-*
-          path: playwright-tests/temp-reports/report
-          merge-multiple: true
-
-      - name: Download Cucumber Reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: cucumber-report-*
-          path: playwright-tests/temp-reports/cucumber
-          merge-multiple: true
-
-      - name: Debug Downloaded Reports
-        run: |
-          echo "Contents of temp-reports directory:"
-          ls -R playwright-tests/temp-reports/
-
-      - name: Debug Directory Structure
-        run: |
-          echo "Temp reports structure:"
-          ls -R playwright-tests/temp-reports/
-
-      - name: Merge Playwright Reports
-        working-directory: playwright-tests
-        run: |
-          # First check for blob reports
-          if [ -d "temp-reports/results/blob-report" ]; then
-            echo "Found blob reports, merging..."
-            npx playwright merge-reports --reporter html temp-reports/results/blob-report
-            mkdir -p merged-reports/playwright
-            cp -r playwright-report/* merged-reports/playwright/
-          # Fallback to HTML reports if no blob reports
-          elif [ -d "temp-reports/report" ]; then
-            echo "No blob reports found, using HTML reports..."
-            mkdir -p merged-reports/playwright
-            cp -r temp-reports/report/* merged-reports/playwright/
-          else
-            echo "No Playwright reports found"
-          fi
-
-      - name: Merge Cucumber Reports
-        working-directory: playwright-tests
-        run: |
-          if [ -d "temp-reports/cucumber" ]; then
-            echo "Found cucumber reports, merging..."
-            mkdir -p merged-reports/cucumber
-            
-            # Create a Node.js script to properly merge JSON reports
-            echo 'const fs = require("fs");
-            const path = require("path");
-
-            function mergeReports() {
-              const reportsDir = "temp-reports/cucumber";
-              const outputDir = "merged-reports/cucumber";
-              const files = fs.readdirSync(reportsDir).filter(f => f.endsWith(".json"));
-              
-              if (files.length === 0) {
-                console.error("No JSON reports found to merge");
-                process.exit(1);
-              }
-
-              let mergedFeatures = [];
-              
-              files.forEach(file => {
-                try {
-                  const content = fs.readFileSync(path.join(reportsDir, file), "utf8");
-                  const report = JSON.parse(content);
-                  if (Array.isArray(report)) {
-                    mergedFeatures = mergedFeatures.concat(report);
-                  }
-                } catch (error) {
-                  console.error(`Error processing ${file}:`, error.message);
-                }
-              });
-
-              // Write the merged report
-              fs.writeFileSync(
-                path.join(outputDir, "cucumber-report.json"),
-                JSON.stringify(mergedFeatures, null, 2)
-              );
-              
-              // Also copy individual reports for reference
-              files.forEach(file => {
-                fs.copyFileSync(
-                  path.join(reportsDir, file),
-                  path.join(outputDir, file)
-                );
-              });
-            }
-
-            mergeReports();' > merge-reports.js
-
-            # Run the merge script
-            node merge-reports.js
-            
-            # Generate HTML report
-            if [ -f "report-generator/cucumber-report.js" ]; then
-              echo "Generating HTML report from merged JSON..."
-              node report-generator/cucumber-report.js
-            fi
-          else
-            echo "No cucumber reports found"
-          fi
-
-      - name: Upload Merged Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-test-reports
-          path: playwright-tests/merged-reports/
-          if-no-files-found: warn
-
-  deploy-report:
-    needs: merge-reports
-    runs-on: ubuntu-latest
     if: always()
-    permissions:
-      pages: write
-      id-token: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Download Merged Reports
+      - name: Download Playwright Report
         uses: actions/download-artifact@v4
         with:
-          name: merged-test-reports
-          path: test-results
+          name: playwright-report
+          path: test-reports/playwright
+
+      - name: Download Cucumber Report
+        uses: actions/download-artifact@v4
+        with:
+          name: cucumber-report
+          path: test-reports/cucumber
+
+      - name: Generate Cucumber HTML Report
+        run: |
+          # Install cucumber-html-reporter
+          npm install cucumber-html-reporter
+          
+          # Create a Node.js script to generate HTML report
+          cat > generate-report.js << 'EOL'
+          const reporter = require('cucumber-html-reporter');
+          
+          const options = {
+            theme: 'bootstrap',
+            jsonFile: 'test-reports/cucumber/*.json',
+            output: 'test-reports/cucumber/index.html',
+            reportSuiteAsScenarios: true,
+            scenarioTimestamp: true,
+            launchReport: false
+          };
+          
+          reporter.generate(options);
+          EOL
+          
+          # Run the script
+          node generate-report.js
 
       - name: Create index.html
         run: |
-          cat > test-results/index.html << 'EOL'
+          cat > test-reports/index.html << 'EOL'
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Test Reports</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              h1 { color: #333; }
-              .report-section { margin: 20px 0; }
-              .report-link {
-                display: inline-block;
-                padding: 10px 20px;
-                background: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 10px 0;
-              }
-              .report-link:hover {
-                background: #0056b3;
-              }
-            </style>
+              <title>Test Reports</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      margin: 0;
+                      padding: 20px;
+                      background-color: #f5f5f5;
+                  }
+                  .container {
+                      max-width: 800px;
+                      margin: 0 auto;
+                      background-color: white;
+                      padding: 20px;
+                      border-radius: 8px;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  }
+                  h1 {
+                      color: #333;
+                      text-align: center;
+                      margin-bottom: 30px;
+                  }
+                  .report-section {
+                      margin: 20px 0;
+                      padding: 20px;
+                      border: 1px solid #ddd;
+                      border-radius: 4px;
+                  }
+                  .report-link {
+                      display: block;
+                      padding: 15px 20px;
+                      background: #007bff;
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 5px;
+                      text-align: center;
+                      margin: 10px 0;
+                      transition: background-color 0.3s;
+                  }
+                  .report-link:hover {
+                      background: #0056b3;
+                  }
+                  h2 {
+                      color: #444;
+                      margin-bottom: 15px;
+                  }
+              </style>
           </head>
           <body>
-            <h1>Test Reports</h1>
-            <div class="report-section">
-              <h2>Playwright Tests Report</h2>
-              <a class="report-link" href="./playwright/index.html">View Playwright Report</a>
-            </div>
-            <div class="report-section">
-              <h2>Cucumber Tests Report</h2>
-              <a class="report-link" href="./cucumber/index.html">View Cucumber Report</a>
-            </div>
+              <div class="container">
+                  <h1>Test Reports</h1>
+                  <div class="report-section">
+                      <h2>Playwright Tests Report</h2>
+                      <a class="report-link" href="./playwright/index.html">View Playwright Report</a>
+                  </div>
+                  <div class="report-section">
+                      <h2>Cucumber Tests Report</h2>
+                      <a class="report-link" href="./cucumber/index.html">View Cucumber Report</a>
+                  </div>
+              </div>
           </body>
           </html>
           EOL
@@ -298,10 +220,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload Pages Artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: test-results
+          path: test-reports
 
       - name: Deploy to GitHub Pages
         id: deployment
