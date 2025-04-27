@@ -74,8 +74,10 @@ jobs:
         env:
           PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          mkdir -p test-results
-          npm run mock -- --shard=${{ matrix.shard }}/2 --reporter=blob,html
+          mkdir -p test-results reports/cucumber reports/playwright reports/cucumber reports/playwright
+          npm run mock -- --shard=${{ matrix.shard }}/2 --reporter=blob,html          npm run feature
+          npm run generate:reports          npm run feature
+          npm run generate:reports
           
       - name: Upload Playwright Results
         if: always()
@@ -93,12 +95,16 @@ jobs:
         with:
           name: playwright-report-${{ matrix.shard }}
           path: playwright-tests/playwright-report/
+          if-no-files-found: warn
+
       - name: Upload Cucumber Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report-${{ matrix.shard }}
-          path: playwright-tests/reports/cucumber/
+          path: |
+            playwright-tests/reports/cucumber/
+            playwright-tests/reports/cucumber/cucumber-report.json
           if-no-files-found: warn
 
       - name: Upload Angular Logs
@@ -191,7 +197,15 @@ jobs:
         working-directory: playwright-tests
         run: |
           if [ -d "temp-reports/cucumber" ]; then
-            cp -r temp-reports/cucumber/*/* merged-reports/cucumber/
+            mkdir -p merged-reports/cucumber
+            # Copy all cucumber reports to the merged directory
+            find temp-reports/cucumber -name "cucumber-report.json" -exec cp {} merged-reports/cucumber/ \;
+            # Generate combined report if needed
+            if [ -f "report-generator/cucumber-report.js" ]; then
+              node report-generator/cucumber-report.js
+            fi
+          else
+            echo "No cucumber reports found"
           fi
 
       - name: Upload Merged Reports
