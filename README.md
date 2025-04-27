@@ -123,11 +123,12 @@ src/
 │   └── saucedemo.steps.ts     # Step definitions for all test scenarios
 ├── support/                   # Test support files
 │   ├── custom-world.ts        # Custom World context for Cucumber
-│   └── hooks.ts              # Before/After test hooks and setup
+│   └── hooks.ts               # Before/After test hooks and setup
 └── tests/
-    ├── features/             # Cucumber feature files
-    │   ├── saucedemo.feature         # Core test scenarios
-    │   └── saucedemo-extended.feature # Extended test scenarios
+    ├── features/              # Cucumber feature files
+    │   ├── saucedemo.feature         # Core test scenarios    
+    │   ├── saucedemo-error.feature   # Error handling scenarios
+    │   └── saucedemo-latency.feature # Performance testing scenarios
     └── mock-tests/           # Playwright mock tests
         └── book-mock.spec.ts # API mocking tests
 ```
@@ -141,39 +142,45 @@ npm install
 npx playwright install
 ```
 
-Run all tests (both mock and feature tests):
+Run all tests:
 ```bash
+# Run all tests (both feature and mock tests)
 npm run test:all
+
+# Run all tests with debug logging
+npm run test:debug
 ```
 
 Run feature tests:
 ```bash
 # Run feature tests with default browser
-npm run feature
+npm run test:features
 
-# Run feature tests in Chrome
-npm run feature:chrome
+# Run feature tests with specific tags
+npm run test:features -- --tags "@smoke"
 
-# Run feature tests in Firefox
-npm run feature:firefox
+# Run feature tests for specific browsers
+npm run test:chrome      # Chrome only
+npm run test:firefox     # Firefox only
+npm run test:webkit      # WebKit only
 
-# Run feature tests in WebKit
-npm run feature:webkit
+# Run feature tests in headed mode
+npm run test:headed
+
+# Run feature tests with UI mode
+npm run test:ui
 ```
 
 Run mock tests:
 ```bash
-# Run mock tests
-npm run mock
+# Run API mock tests
+npm run test:mock
 
 # Run mock tests in debug mode
-npm run mock:debug
+npm run test:mock:debug
 
 # Run mock tests in UI mode
-npm run mock:ui
-
-# Run mock tests in headed mode
-npm run mock:headed
+npm run test:mock:ui
 ```
 
 #### Test Reports
@@ -181,22 +188,54 @@ npm run mock:headed
 Generate and view test reports:
 
 ```bash
-# Generate Cucumber JSON report and run report generator
-npm run test:report
+# Generate all test reports
+npm run report:generate
 
-# Open Cucumber HTML report
-npm run open:report
+# Open HTML test report
+npm run report:open
 
-# View Playwright mock test report
-npm run mock:report
+# Clean previous reports
+npm run report:clean
 
-# Open both feature and mock test reports
-npm run open:reports
+# Generate and open reports in one command
+npm run report:all
 ```
 
 #### Additional Scripts
+npm run check:types
 
-```bash
+# Lint check
+npm run lint
+
+# Clean test reports
+npm run clean:reports
+```
+
+## 🔄 CI/CD Integration
+
+The project includes GitHub Actions workflows for continuous integration and deployment:
+
+### Automated Testing
+
+- Runs on every push and pull request
+- Executes all test suites across multiple browsers
+- Generates and stores test reports as artifacts
+- Validates code quality and TypeScript compilation
+
+### Deployment
+
+- Automated deployment to staging environment on merge to develop branch
+- Production deployment triggered on release tags
+- Environment-specific configuration management
+- Build optimization for production
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.```bash
 # TypeScript compilation check
 npm run compile
 
@@ -261,14 +300,6 @@ The following artifacts are generated and stored:
 - Playwright test results (playwright-report/)
 - Test execution traces (test-results/)
 - Combined test report (test-report/)
-
-##### Parallel Execution
-Tests are sharded into 3 parts for parallel execution:
-```yaml
-strategy:
-  matrix:
-    shard: [1/3, 2/3, 3/3]
-```
 
 ##### Dependencies Installation
 ```bash
