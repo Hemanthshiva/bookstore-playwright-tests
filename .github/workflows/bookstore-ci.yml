@@ -74,7 +74,7 @@ jobs:
         env:
           PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          npm run mock -- --shard=${{ matrix.shard }}/2
+          npm run mock -- --shard=${{ matrix.shard }}/2 --reporter=json,html
 
       - name: Run Feature Tests
         working-directory: playwright-tests
@@ -87,12 +87,14 @@ jobs:
         run: |
           npm run feature:chrome -- --parallel 2 --shard ${{ matrix.shard }}/2
 
-      - name: Upload Playwright Report
+      - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shard }}
-          path: playwright-tests/playwright-report/
+          name: test-results-${{ matrix.shard }}
+          path: |
+            playwright-tests/test-results/
+            playwright-tests/playwright-report/
           if-no-files-found: warn
 
       - name: Upload Cucumber Report
@@ -137,30 +139,64 @@ jobs:
         run: |
           mkdir -p playwright-tests/merged-reports/playwright
           mkdir -p playwright-tests/merged-reports/cucumber
+          mkdir -p playwright-tests/temp-reports
 
-      - name: Download Playwright Reports
+      - name: Download Test Results
         uses: actions/download-artifact@v4
         with:
-          pattern: playwright-report-*
-          path: playwright-tests/temp-reports/playwright
+          pattern: test-results-*
+          path: playwright-tests/temp-reports
+          merge-multiple: true
 
       - name: Download Cucumber Reports
         uses: actions/download-artifact@v4
         with:
           pattern: cucumber-report-*
           path: playwright-tests/temp-reports/cucumber
+          merge-multiple: true
 
-      - name: List Downloaded Reports
+      - name: Debug Directory Structure
         run: |
-          echo "Downloaded reports structure:"
+          echo "Temp reports structure:"
           ls -R playwright-tests/temp-reports/
 
       - name: Merge Playwright Reports
         working-directory: playwright-tests
         run: |
-          if [ -d "temp-reports/playwright" ]; then
-            npx playwright merge-reports --reporter html temp-reports/playwright
-            cp -r playwright-report/* merged-reports/playwright/
+          # Check for test results
+          if [ -d "temp-reports/test-results" ]; then
+            echo "Found test results directory"
+            ls -la temp-reports/test-results/
+            
+            # Create a directory for JSON reports
+            mkdir -p temp-json-reports
+            
+            # Find and copy all JSON reports
+            find temp-reports/test-results -name "*.json" -exec cp {} temp-json-reports/ \;
+            
+            echo "Contents of temp-json-reports:"
+            ls -la temp-json-reports/
+            
+            # Merge reports if we have JSON files
+            if [ "$(ls -A temp-json-reports)" ]; then
+              echo "Merging JSON reports..."
+              npx playwright merge-reports --reporter html temp-json-reports
+              cp -r playwright-report/* merged-reports/playwright/
+            else
+              echo "No JSON reports found to merge"
+              # Fallback to copying HTML report if available
+              if [ -d "temp-reports/playwright-report" ]; then
+                echo "Copying existing HTML report"
+                cp -r temp-reports/playwright-report/* merged-reports/playwright/
+              fi
+            fi
+          else
+            echo "No test results directory found"
+            # Fallback to copying HTML report if available
+            if [ -d "temp-reports/playwright-report" ]; then
+              echo "Copying existing HTML report"
+              cp -r temp-reports/playwright-report/* merged-reports/playwright/
+            fi
           fi
 
       - name: Merge Cucumber Reports
