@@ -12,8 +12,11 @@ export default defineConfig({
     workers: process.env.CI ? 2 : undefined,
     reporter: [
         ['list'],
-        ['html', { open: 'never' }],
-        ['junit', { outputFile: 'playwright-report/junit-report.xml' }]
+        ['html', {
+            open: 'never',
+            outputFolder: 'reports/playwright'
+        }],
+        ['junit', { outputFile: 'reports/playwright/junit-report.xml' }]
     ],
     use: {
         baseURL: 'https://www.saucedemo.com',

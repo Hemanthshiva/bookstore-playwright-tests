@@ -13,10 +13,10 @@
     "mock:debug": "playwright test src/tests/mock-tests/ --debug",
     "mock:ui": "playwright test src/tests/mock-tests/ --ui",
     "mock:headed": "playwright test src/tests/mock-tests/ --headed --workers=1",
-    "generate:playwright-report": "cp -r playwright-report/* reports/playwright/ || mkdir -p reports/playwright && cp -r playwright-report/* reports/playwright/",
+    "generate:playwright-report": "mkdir -p reports/playwright",
     "postmock": "npx kill-port 4200",
     "test:all": "npm run mock && npm run feature",
-    "generate:reports": "mkdir -p reports/playwright && npm run generate:cucumber-report && npm run generate:playwright-report",
+    "generate:reports": "mkdir -p reports/playwright reports/cucumber && npm run generate:cucumber-report && npm run generate:playwright-report",
     "cleanup:reports": "true"
   },
   "keywords": [],

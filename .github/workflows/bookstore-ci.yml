@@ -91,7 +91,7 @@ jobs:
         if: always()
         working-directory: playwright-tests
         run: |
-          mkdir -p reports/playwright
+          mkdir -p reports/playwright reports/cucumber
           npm run generate:reports
 
       - name: Upload Test Results
@@ -99,10 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.shard }}
-          path: |
-            playwright-tests/playwright-report/
-            playwright-tests/reports/cucumber/
-            playwright-tests/test-results/
+          path: playwright-tests/reports/
           if-no-files-found: warn
 
       - name: Upload Angular Logs
@@ -122,9 +119,16 @@ jobs:
     needs: playwright-tests
     runs-on: ubuntu-latest
     if: always()
-
     steps:
-      - name: Create Report Directories
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Create Directories
         run: |
           mkdir -p merged-reports/playwright
           mkdir -p merged-reports/cucumber
@@ -133,13 +137,33 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: test-results-*
-          path: all-reports
+          path: downloaded-reports
           merge-multiple: true
+
+      - name: Install Playwright
+        run: |
+          cd playwright-tests
+          npm ci
+          npx playwright install chromium
 
       - name: Merge Reports
         run: |
-          cp -r all-reports/playwright-report/* merged-reports/playwright/ || true
-          cp -r all-reports/reports/* merged-reports/cucumber/ || true
+          # Copy Playwright reports to a temp directory for merging
+          mkdir -p temp-playwright
+          if [ -d "downloaded-reports/playwright" ]; then
+            cp -r downloaded-reports/playwright/* temp-playwright/
+          fi
+
+          # Merge Playwright reports
+          if [ "$(ls -A temp-playwright)" ]; then
+            npx playwright merge-reports --reporter html temp-playwright
+            cp -r playwright-report/* merged-reports/playwright/
+          fi
+
+          # Copy Cucumber reports
+          if [ -d "downloaded-reports/cucumber" ]; then
+            cp -r downloaded-reports/cucumber/* merged-reports/cucumber/
+          fi
 
       - name: Upload Merged Reports
         uses: actions/upload-artifact@v4
@@ -195,12 +219,12 @@ jobs:
           <body>
             <h1>Test Reports</h1>
             <div class="report-section">
-              <h2>Playwright Mock Tests Report</h2>
-              <a class="report-link" href="./playwright/">View Report</a>
+              <h2>Playwright Tests Report</h2>
+              <a class="report-link" href="./playwright/">View Playwright Report</a>
             </div>
             <div class="report-section">
-              <h2>Cucumber Feature Tests Report</h2>
-              <a class="report-link" href="./cucumber/">View Report</a>
+              <h2>Cucumber Tests Report</h2>
+              <a class="report-link" href="./cucumber/">View Cucumber Report</a>
             </div>
           </body>
           </html>
