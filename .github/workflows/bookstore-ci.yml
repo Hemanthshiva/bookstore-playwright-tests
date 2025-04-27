@@ -83,10 +83,7 @@ jobs:
             # Run tests with proper sharding
             npm run mock -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
             npm run feature:shard -- --shard=${{ matrix.shard }} --total-shards=${{ strategy.job-total }}
-            # Run tests with proper sharding
-            npm run mock -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-            npm run feature:shard -- --shard=${{ matrix.shard }} --total-shards=${{ strategy.job-total }}
-          
+           
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
