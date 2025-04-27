@@ -19,11 +19,9 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Clean Install Dependencies
+      - name: Install Dependencies
         run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-          npm install
+          npm ci || npm install
 
       - name: Install Angular CLI
         run: npm install -g @angular/cli@19.2.9
@@ -48,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1/2, 2/2]
+        shard: [1, 2]
 
     steps:
       - name: Checkout
@@ -62,7 +60,7 @@ jobs:
 
       - name: Install Root Dependencies
         run: |
-          npm install
+          npm ci || npm install
           npm install -g @angular/cli@19.2.9
 
       - name: Install Playwright Dependencies
@@ -76,10 +74,7 @@ jobs:
         env:
           PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          npm run mock -- --shard=${{ matrix.shard }} || {
-            echo "Mock tests failed"
-            exit 1
-          }
+          npm run mock -- --shard=${{ matrix.shard }}/2
 
       - name: Run Feature Tests
         working-directory: playwright-tests
@@ -87,27 +82,22 @@ jobs:
           PLAYWRIGHT_REUSE_SERVER: "true"
           NODE_ENV: "test"
           BROWSER: "chromium"
+          CUCUMBER_PARALLEL: "2"
+          CUCUMBER_SHARD: "${{ matrix.shard }}"
         run: |
-          echo "Running feature tests..."
-          npm run feature:chrome || {
-            echo "Feature tests failed"
-            exit 1
-          }
+          npm run feature:chrome -- --parallel 2 --shard ${{ matrix.shard }}/2
 
-      - name: Generate Test Reports
+      - name: Generate Reports
         if: always()
         working-directory: playwright-tests
         run: |
-          echo "Generating reports..."
-          npm run open:report || true
-          ls -R reports/ || true
-          ls -R playwright-report/ || true
+          npm run open:reports
 
-      - name: Upload Test Reports
+      - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.shard }}
+          name: test-results-${{ matrix.shard }}
           path: |
             playwright-tests/playwright-report/
             playwright-tests/reports/
@@ -124,7 +114,7 @@ jobs:
       - name: Stop Angular App
         if: always()
         run: |
-          sudo lsof -t -i:4200 | xargs -r sudo kill -9 || true
+          npx kill-port 4200 || true
           sleep 2
 
   merge-reports:
@@ -138,10 +128,10 @@ jobs:
           mkdir -p merged-reports/playwright
           mkdir -p merged-reports/cucumber
 
-      - name: Download All Test Reports
+      - name: Download Test Results
         uses: actions/download-artifact@v4
         with:
-          pattern: test-reports-*
+          pattern: test-results-*
           path: all-reports
           merge-multiple: true
 
@@ -157,12 +147,11 @@ jobs:
           path: merged-reports
           if-no-files-found: warn
 
-  publish-report:
+  deploy-report:
     needs: merge-reports
     runs-on: ubuntu-latest
     if: always()
     permissions:
-      contents: read
       pages: write
       id-token: write
 
@@ -171,26 +160,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Create Report Directory
-        run: |
-          mkdir -p test-results
-          mkdir -p test-results/playwright
-          mkdir -p test-results/cucumber
-
       - name: Download Merged Reports
         uses: actions/download-artifact@v4
         with:
           name: merged-test-reports
-          path: downloaded-reports
-
-      - name: Organize Reports
-        run: |
-          cp -r downloaded-reports/playwright/* test-results/playwright/ || true
-          cp -r downloaded-reports/cucumber/* test-results/cucumber/ || true
-          ls -R test-results/
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+          path: test-results
 
       - name: Create index.html
         run: |
@@ -200,30 +174,41 @@ jobs:
           <head>
             <title>Test Reports</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 40px; }
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; }
+              .report-section { margin: 20px 0; }
               .report-link {
-                display: block;
-                margin: 20px 0;
-                padding: 15px;
-                background-color: #f0f0f0;
-                border-radius: 5px;
+                display: inline-block;
+                padding: 10px 20px;
+                background: #007bff;
+                color: white;
                 text-decoration: none;
-                color: #333;
+                border-radius: 5px;
+                margin: 10px 0;
               }
               .report-link:hover {
-                background-color: #e0e0e0;
+                background: #0056b3;
               }
             </style>
           </head>
           <body>
             <h1>Test Reports</h1>
-            <a class="report-link" href="./playwright/index.html">Mock Test Report</a>
-            <a class="report-link" href="./cucumber/cucumber-html-report/index.html">Cucumber Test Report</a>
+            <div class="report-section">
+              <h2>Playwright Mock Tests Report</h2>
+              <a class="report-link" href="./playwright/">View Report</a>
+            </div>
+            <div class="report-section">
+              <h2>Cucumber Feature Tests Report</h2>
+              <a class="report-link" href="./cucumber/">View Report</a>
+            </div>
           </body>
           </html>
           EOL
 
-      - name: Upload Reports to Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: test-results
