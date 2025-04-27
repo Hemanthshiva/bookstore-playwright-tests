@@ -64,15 +64,17 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Install Playwright Dependencies
-        working-directory: playwright-tests
-        run: |
-          npx playwright install --with-deps chromium
-
       - name: Install Root Dependencies
         run: |
           npm ci || npm install
           npm install -g @angular/cli@19.2.9
+
+      - name: Install Playwright Dependencies
+        working-directory: playwright-tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm install -g @playwright/test
 
       - name: Run All Tests
         working-directory: playwright-tests
@@ -83,7 +85,7 @@ jobs:
           mkdir -p reports/cucumber
           mkdir -p reports/playwright
           
-          # Run tests
+          # Run tests using npm scripts
           npm run test:all
 
       - name: Upload Playwright HTML Report
