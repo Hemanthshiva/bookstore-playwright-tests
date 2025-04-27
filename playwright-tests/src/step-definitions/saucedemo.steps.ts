@@ -248,11 +248,32 @@ Then('sorting functionality may be limited', async function () {
     // No specific test verification needed as this step acknowledges limited functionality
     // Just ensure the sort dropdown is present and clickable
 
-    // const productsPage = new ProductsPage(this.page!);
-    // const isVisible = await productsPage.isSortDropdownVisible();
-    // expect(isVisible).toBeTruthy();
-    // const isPerformanceUser = this.isPerformanceGlitchUser || false;
-    // await productsPage.sortProductsBy('Price (low to high)', isPerformanceUser);
-    // expect(await productsPage.verifyPriceSort(true, isPerformanceUser)).toBeTruthy();
+    const productsPage = new ProductsPage(this.page!);
+    const isVisible = await productsPage.isSortDropdownVisible();
+    expect(isVisible).toBeTruthy();
+    const isPerformanceUser = this.isPerformanceGlitchUser || false;
+    await productsPage.sortProductsBy('Price (low to high)', isPerformanceUser);
+    expect(await productsPage.verifyPriceSort(true, isPerformanceUser)).toBeTruthy();
 
 });
+
+Then('A popup is displayed with the below error message', async function (table: DataTable) {
+    const expectedMessage = table.raw()[0][0];
+    const productsPage = new ProductsPage(this.page!);
+    await productsPage.verifyPopUpErrorMessage(expectedMessage);
+});
+
+
+When('I try to add all items to the cart', async function () {
+    const productsPage = new ProductsPage(this.page!);
+    await productsPage.addAllItemsToCart();
+});
+
+Then('Only {int} items should be added to the cart', async function (count: number) {
+    const productsPage = new ProductsPage(this.page!);
+    const cartItemCount = Number(await productsPage.getCartBadgeCount());
+    const addToCartButtonCount = await productsPage.getAddToCartButtonCount();
+
+    expect(cartItemCount).toBe(count);
+    expect(addToCartButtonCount).toBe(count);
+});       

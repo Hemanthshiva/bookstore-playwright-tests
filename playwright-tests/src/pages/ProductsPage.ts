@@ -5,12 +5,14 @@ export class ProductsPage extends BasePage {
     private readonly addToCartBtn = '[data-test^="add-to-cart"]';
     private readonly cartIcon = '.shopping_cart_link';
     private readonly cartBadge = '.shopping_cart_badge';
-    private readonly productsTitle = '.title';
     private readonly productsList = '.inventory_item';
     private readonly sortDropdown = '.select_container';
+    private readonly sortDropdownContainer = '[data-test="product-sort-container"]';
     private readonly productNames = '.inventory_item_name';
     private readonly productPrices = '.inventory_item_price';
     private readonly inventoryList = '.inventory_list';
+
+    private lastPopupMessage: string = '';
 
     constructor(page: Page) {
         super(page);
@@ -60,32 +62,6 @@ export class ProductsPage extends BasePage {
         return await this.isElementVisible(this.cartBadge);
     }
 
-    async waitForSortOption(option: string, maxRetries = 3): Promise<boolean> {
-        let retries = 0;
-        while (retries < maxRetries) {
-            try {
-                // Wait for dropdown to be visible
-                await this.page.waitForSelector(this.sortDropdown, { state: 'visible', timeout: 20000 });
-
-                // Get all available options
-                const options = await this.page.$$eval(this.sortDropdown + ' option',
-                    elements => elements.map(el => el.textContent));
-
-                // Check if our option exists
-                if (options.includes(option)) {
-                    return true;
-                }
-            } catch (e) {
-                console.log(`Retry ${retries + 1} for sort option: ${option}`);
-            }
-            retries++;
-            if (retries < maxRetries) {
-                await this.page.waitForTimeout(5000); // Wait 5 seconds before retry
-            }
-        }
-        return false;
-    }
-
     async isSortDropdownVisible(isPerformanceUser = false): Promise<boolean> {
         try {
             const timeout = isPerformanceUser ? 60000 : 5000;
@@ -100,93 +76,47 @@ export class ProductsPage extends BasePage {
         }
     }
 
-    private async waitForSortToComplete(prevNames: string[], timeout = 30000): Promise<boolean> {
-        const startTime = Date.now();
-        while (Date.now() - startTime < timeout) {
-            const currentNames = await this.getProductNames();
-            if (JSON.stringify(currentNames) !== JSON.stringify(prevNames)) {
-                return true;
-            }
-            await this.page.waitForTimeout(1000);
-        }
-        return false;
-    }
-
-    private async debugArrays(actual: any[], expected: any[], label: string) {
-        console.log(`\n${label} Debug:`);
-        console.log('Actual:', actual);
-        console.log('Expected:', expected);
-        console.log('Arrays match:', JSON.stringify(actual) === JSON.stringify(expected));
-    }
-
-    private async getCurrentSortOption(): Promise<string> {
-        return await this.page.getByTestId('active-option').innerText();
-    }
-
-    private async forceRefresh(): Promise<void> {
-        const currentUrl = this.page.url();
-        await this.page.goto(currentUrl);
-        await this.waitForPageLoad();
-    }
-
     async sortProductsBy(sortOption: string, isPerformanceUser = false): Promise<void> {
         await this.waitForPageLoad();
 
-        // Get initial product names for comparison
-        const initialNames = await this.getProductNames();
-        console.log('Initial names:', initialNames);
+        const optionValueMap: { [key: string]: string } = {
+            'Name (A to Z)': 'az',
+            'Name (Z to A)': 'za',
+            'Price (low to high)': 'lohi',
+            'Price (high to low)': 'hilo'
+        };
 
-        // Wait for sort option with retries
-        const sortAvailable = await this.waitForSortOption(sortOption);
-        if (!sortAvailable) {
-            console.log('Sort dropdown not available or option not found');
-            return;
+        // Get the value from the map and validate
+        const value = optionValueMap[sortOption];
+        if (!value) {
+            throw new Error(`Invalid sort option: ${sortOption}`);
         }
 
-        // Attempt to select the option
+        this.page.once('dialog', async (dialog) => {
+            this.lastPopupMessage = dialog.message();
+            await dialog.accept();
+        });
+
+        // Perform the sort actions
+        await this.page.locator(this.sortDropdown).click();
+        await this.page.locator(this.sortDropdownContainer).selectOption(value);
+
         try {
-            // Map the display text to the actual option value
-            const optionValueMap: { [key: string]: string } = {
-                'Name (A to Z)': 'az',
-                'Name (Z to A)': 'za',
-                'Price (low to high)': 'lohi',
-                'Price (high to low)': 'hilo'
-            };
+            // Small wait to allow for any dialog to appear
+            await this.page.waitForTimeout(100);
 
-            const optionValue = optionValueMap[sortOption];
-            await this.page.selectOption(this.sortDropdown, { value: optionValue });
-            await this.waitForSortOptionToBeSelected(sortOption);
-
-            // For performance_glitch_user, use multiple approaches to ensure sort takes effect
             if (isPerformanceUser) {
-                // First wait for any immediate changes
                 await this.page.waitForTimeout(5000);
-
-                // Try clicking the dropdown again to ensure it's properly engaged
-                await this.page.click(this.sortDropdown);
-                await this.page.waitForTimeout(1000);
-
-                // Select the option again
-                await this.page.selectOption(this.sortDropdown, { value: optionValue });
-                await this.page.waitForTimeout(5000);
-
-                // Force a refresh and wait for load
-                await this.forceRefresh();
-                await this.page.waitForTimeout(3000);
-            } else {
-                // For other users, just wait for potential animations
-                await this.page.waitForTimeout(2000);
+                await this.waitForSortOptionToBeSelected(sortOption);
             }
-
-            const finalNames = await this.getProductNames();
-            console.log('Final names after sort:', finalNames);
-        } catch (e) {
-            console.log('Error during sort operation:', e);
+        } catch (error) {
+            console.error('Sort operation failed:', error);
+            throw error;
         }
     }
 
 
-    private async waitForSortOptionToBeSelected(sortOption: string): Promise<void> {
+    async waitForSortOptionToBeSelected(sortOption: string): Promise<void> {
         await expect(async () => {
             const currentSortOption = await this.getCurrentSortOption();
             console.log('Current sort option:', currentSortOption);
@@ -194,87 +124,74 @@ export class ProductsPage extends BasePage {
         }).toPass();
     }
 
+    private async getCurrentSortOption(): Promise<string> {
+        return await this.page.getByTestId('active-option').innerText();
+    }
 
-    private async verifyOrder<T>(items: T[], expectedItems: T[]): Promise<boolean> {
-        if (items.length !== expectedItems.length) return false;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i] !== expectedItems[i]) return false;
-        }
-        return true;
+    getLastPopupMessage(): string {
+        return this.lastPopupMessage;
     }
 
     async getProductNames(): Promise<string[]> {
         await this.waitForPageLoad();
         return await this.page.$$eval(this.productNames,
-            elements => elements.map(el => el.textContent || ''));
-    }
-
-    async getProductPrices(): Promise<number[]> {
-        await this.waitForPageLoad();
-        const prices = await this.page.$$eval(this.productPrices,
-            elements => elements.map(el => el.textContent || ''));
-        return prices.map(price => parseFloat(price.replace('$', '')));
+            elements => elements.map(el => el.textContent || '')
+        );
     }
 
     async verifyAlphabeticalSort(ascending: boolean, isPerformanceUser = false): Promise<boolean> {
-        // For performance_glitch_user, add extra initial wait
-        if (isPerformanceUser) {
-            await this.page.waitForTimeout(5000);
-        }
-
-        for (let i = 0; i < (isPerformanceUser ? 5 : 3); i++) {
-            const names = await this.getProductNames();
-            const sorted = [...names].sort((a, b) =>
-                ascending ? a.localeCompare(b) : b.localeCompare(a));
-
-            this.debugArrays(names, sorted, `Alphabetical sort ${ascending ? 'ascending' : 'descending'}`);
-
-            if (await this.verifyOrder(names, sorted)) {
-                return true;
-            }
-
-            if (isPerformanceUser && i < 4) {
-                // For performance_glitch_user, try refreshing between attempts
-                await this.forceRefresh();
-                await this.page.waitForTimeout(3000);
-            } else if (i < 2) {
-                await this.page.waitForTimeout(2000);
-            }
-        }
-        return false;
+        const names = await this.getProductNames();
+        const sortedNames = [...names].sort((a, b) => {
+            return ascending ? a.localeCompare(b) : b.localeCompare(a);
+        });
+        return JSON.stringify(names) === JSON.stringify(sortedNames);
     }
 
     async verifyPriceSort(ascending: boolean, isPerformanceUser = false): Promise<boolean> {
-        // For performance_glitch_user, add extra initial wait
-        if (isPerformanceUser) {
-            await this.page.waitForTimeout(5000);
+        const prices = await this.page.$$eval(this.productPrices,
+            elements => elements.map(el => {
+                const price = el.textContent?.replace('$', '') || '0';
+                return parseFloat(price);
+            })
+        );
+        const sortedPrices = [...prices].sort((a, b) => {
+            return ascending ? a - b : b - a;
+        });
+        return JSON.stringify(prices) === JSON.stringify(sortedPrices);
+    }
+
+    async addAllItemsToCart(): Promise<void> {
+        await this.waitForPageLoad();
+        const buttons = await this.page.locator(this.addToCartBtn).all();
+        for (let i = buttons.length - 1; i >= 0; i--) {
+            await buttons[i].click();
         }
+    }
 
-        for (let i = 0; i < (isPerformanceUser ? 5 : 3); i++) {
-            const prices = await this.getProductPrices();
-            const sorted = [...prices].sort((a, b) =>
-                ascending ? a - b : b - a);
+    async getAddToCartButtonCount(): Promise<number> {
+        const buttons = this.page.locator(this.addToCartBtn);
+        return await buttons.count();
+    }
 
-            this.debugArrays(prices, sorted, `Price sort ${ascending ? 'ascending' : 'descending'}`);
-
-            if (await this.verifyOrder(prices, sorted)) {
-                return true;
-            }
-
-            if (isPerformanceUser && i < 4) {
-                // For performance_glitch_user, try refreshing between attempts
-                await this.forceRefresh();
-                await this.page.waitForTimeout(3000);
-            } else if (i < 2) {
-                await this.page.waitForTimeout(2000);
-            }
+    async isInventoryListVisible(isPerformanceUser = false): Promise<boolean> {
+        const timeout = isPerformanceUser ? 60000 : 5000;
+        try {
+            await this.page.waitForSelector(this.inventoryList, { timeout });
+            return await this.page.isVisible(this.inventoryList);
+        } catch (e) {
+            console.log('Error checking inventory list visibility:', e);
+            return false;
         }
-        return false;
+    }
+
+    async getAddedToCartCount(): Promise<number> {
+        const cartBadgeText = await this.getCartBadgeCount();
+        return cartBadgeText ? parseInt(cartBadgeText) : 0;
     }
 
     async clickSortDropdown(): Promise<void> {
-        await this.waitForPageLoad();
         try {
+            await this.waitForPageLoad();
             await this.page.click(this.sortDropdown);
         } catch (e) {
             console.log('Error clicking sort dropdown:', e);
@@ -283,27 +200,10 @@ export class ProductsPage extends BasePage {
 
     async getSortOptions(): Promise<string[]> {
         await this.waitForPageLoad();
-        try {
-            return await this.page.$$eval(`${this.sortDropdown} option`,
-                elements => elements.map(el => el.textContent || ''));
-        } catch (e) {
-            console.log('Error getting sort options:', e);
-            return [];
-        }
-    }
-
-    async isInventoryListVisible(isPerformanceUser = false): Promise<boolean> {
-        try {
-            const timeout = isPerformanceUser ? 60000 : 5000;
-            console.log(`Checking inventory list visibility with timeout: ${timeout}ms`);
-            await this.page.waitForSelector(this.inventoryList, { state: 'visible', timeout });
-            const isVisible = await this.page.isVisible(this.inventoryList);
-            console.log(`Inventory list visibility: ${isVisible}`);
-            return isVisible;
-        } catch (e) {
-            console.log('Error checking inventory list visibility:', e);
-            return false;
-        }
+        const options = await this.page.$$eval(`${this.sortDropdown} option`,
+            elements => elements.map(el => el.textContent?.trim() || '')
+        );
+        return options;
     }
 
     async canViewProductDetails(isPerformanceUser = false): Promise<boolean> {
@@ -335,5 +235,9 @@ export class ProductsPage extends BasePage {
             console.log('Error checking product details:', e);
             return false;
         }
+    }
+
+    async verifyPopUpErrorMessage(expectedMessage: string): Promise<boolean> {
+        return this.lastPopupMessage === expectedMessage;
     }
 }

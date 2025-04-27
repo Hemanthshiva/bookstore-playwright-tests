@@ -7,10 +7,10 @@
         When I enter username "<username>"
         And I enter password "secret_sauce"
         And I click on the login button
-        Then I should verify "<behavior>"
+        Then I should verify "<error>"
 
         Examples:
-            | username        | behavior                                            |
+            | username        | error                                               |
             | locked_out_user | Epic sadface: Sorry, this user has been locked out. |
 
 
