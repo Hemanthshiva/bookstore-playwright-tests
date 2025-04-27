@@ -2,9 +2,9 @@ name: Bookstore WebApp CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
+          node-version: "20.x"
+          cache: "npm"
 
       - name: Install Dependencies
         run: |
@@ -55,8 +55,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
+          node-version: "20.x"
+          cache: "npm"
 
       - name: Install Root Dependencies
         run: |
@@ -99,7 +99,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.shard }}
-          path: playwright-tests/reports/
+          path: |
+            playwright-tests/playwright-report/
+            playwright-tests/reports/
           if-no-files-found: warn
 
       - name: Upload Angular Logs
@@ -126,12 +128,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: "20.x"
 
-      - name: Create Directories
+      - name: Install Playwright
         run: |
-          mkdir -p merged-reports/playwright
-          mkdir -p merged-reports/cucumber
+          cd playwright-tests
+          npm ci
+          npx playwright install chromium
 
       - name: Download Test Results
         uses: actions/download-artifact@v4
@@ -140,30 +143,43 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Install Playwright
+      - name: Debug Directory Structure
         run: |
-          cd playwright-tests
-          npm ci
-          npx playwright install chromium
+          echo "Current directory structure:"
+          ls -R downloaded-reports/
 
-      - name: Merge Reports
+      - name: Prepare Merge Directories
         run: |
-          # Copy Playwright reports to a temp directory for merging
-          mkdir -p temp-playwright
-          if [ -d "downloaded-reports/playwright" ]; then
-            cp -r downloaded-reports/playwright/* temp-playwright/
+          mkdir -p merged-reports/playwright
+          mkdir -p merged-reports/cucumber
+
+      - name: Merge Playwright Reports
+        run: |
+          # Create temp directory for merging
+          mkdir -p temp-playwright-reports
+
+          # Copy all Playwright reports to temp directory
+          if [ -d "downloaded-reports/playwright-report" ]; then
+            cp -r downloaded-reports/playwright-report/* temp-playwright-reports/
           fi
 
-          # Merge Playwright reports
-          if [ "$(ls -A temp-playwright)" ]; then
-            npx playwright merge-reports --reporter html temp-playwright
+          # Merge reports if there are any
+          if [ "$(ls -A temp-playwright-reports)" ]; then
+            npx playwright merge-reports --reporter html temp-playwright-reports
             cp -r playwright-report/* merged-reports/playwright/
           fi
 
-          # Copy Cucumber reports
-          if [ -d "downloaded-reports/cucumber" ]; then
-            cp -r downloaded-reports/cucumber/* merged-reports/cucumber/
+      - name: Merge Cucumber Reports
+        run: |
+          # Copy all Cucumber reports
+          if [ -d "downloaded-reports/reports/cucumber" ]; then
+            cp -r downloaded-reports/reports/cucumber/* merged-reports/cucumber/
           fi
+
+      - name: Debug Merged Reports
+        run: |
+          echo "Merged reports directory structure:"
+          ls -R merged-reports/
 
       - name: Upload Merged Reports
         uses: actions/upload-artifact@v4
@@ -190,6 +206,11 @@ jobs:
         with:
           name: merged-test-reports
           path: test-results
+
+      - name: Debug Downloaded Reports
+        run: |
+          echo "Test results directory structure:"
+          ls -R test-results/
 
       - name: Create index.html
         run: |
@@ -220,11 +241,11 @@ jobs:
             <h1>Test Reports</h1>
             <div class="report-section">
               <h2>Playwright Tests Report</h2>
-              <a class="report-link" href="./playwright/">View Playwright Report</a>
+              <a class="report-link" href="./playwright/index.html">View Playwright Report</a>
             </div>
             <div class="report-section">
               <h2>Cucumber Tests Report</h2>
-              <a class="report-link" href="./cucumber/">View Cucumber Report</a>
+              <a class="report-link" href="./cucumber/index.html">View Cucumber Report</a>
             </div>
           </body>
           </html>
