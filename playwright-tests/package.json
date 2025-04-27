@@ -5,6 +5,7 @@
   "scripts": {
     "compile": "tsc --noEmit",
     "feature": "cucumber-js --config ./config/cucumber.js --format json:reports/cucumber/cucumber-report.json --format summary",
+    "feature:shard": "node scripts/run-sharded-features.js",
     "generate:cucumber-report": "node report-generator/cucumber-report.js",
     "feature:chrome": "cross-env BROWSER=chromium npm run feature",
     "feature:firefox": "cross-env BROWSER=firefox npm run feature",
