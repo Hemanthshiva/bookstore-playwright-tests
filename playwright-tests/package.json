@@ -5,8 +5,7 @@
   "scripts": {
     "compile": "tsc --noEmit",
     "feature": "cucumber-js --config ./config/cucumber.js --format json:reports/cucumber/cucumber-report.json --format summary",
-    "open:report": "node report-generator/cucumber-report.js",
-    "test:report": "npm run feature && npm run report",
+    "generate:cucumber-report": "node report-generator/cucumber-report.js",
     "feature:chrome": "cross-env BROWSER=chromium npm run feature",
     "feature:firefox": "cross-env BROWSER=firefox npm run feature",
     "feature:webkit": "cross-env BROWSER=webkit npm run feature",
@@ -14,10 +13,10 @@
     "mock:debug": "playwright test src/tests/mock-tests/ --debug",
     "mock:ui": "playwright test src/tests/mock-tests/ --ui",
     "mock:headed": "playwright test src/tests/mock-tests/ --headed --workers=1",
-    "mock:report": "playwright show-report",
+    "generate:playwright-report": "playwright show-report --reporter=html",
     "postmock": "npx kill-port 4200",
     "test:all": "npm run mock && npm run feature",
-    "open:reports": "npm run open:report && npm run mock:report"
+    "generate:reports": "npm run generate:cucumber-report && npm run generate:playwright-report"
   },
   "keywords": [],
   "author": "Hemanth Shivashankarappa",

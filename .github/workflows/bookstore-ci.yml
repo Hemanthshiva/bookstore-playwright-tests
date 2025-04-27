@@ -91,7 +91,7 @@ jobs:
         if: always()
         working-directory: playwright-tests
         run: |
-          npm run open:reports
+          npm run generate:reports
 
       - name: Upload Test Results
         if: always()
@@ -100,7 +100,7 @@ jobs:
           name: test-results-${{ matrix.shard }}
           path: |
             playwright-tests/playwright-report/
-            playwright-tests/reports/
+            playwright-tests/reports/cucumber/
             playwright-tests/test-results/
           if-no-files-found: warn
 
