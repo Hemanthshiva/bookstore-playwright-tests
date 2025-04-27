@@ -76,10 +76,16 @@ jobs:
             SHARD: ${{ matrix.shard }}
             SHARD_COUNT: 2
         run: |
-            npm run test:all -- --shard=${{ matrix.shard }}
-  
-
-            # npm run generate:reports
+            # Create reports directory
+            mkdir -p reports/cucumber
+            mkdir -p reports/playwright
+            
+            # Run tests with proper sharding
+            npm run mock -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+            npm run feature:shard -- --shard=${{ matrix.shard }} --total-shards=${{ strategy.job-total }}
+            # Run tests with proper sharding
+            npm run mock -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+            npm run feature:shard -- --shard=${{ matrix.shard }} --total-shards=${{ strategy.job-total }}
           
       - name: Upload Playwright HTML Report
         if: always()

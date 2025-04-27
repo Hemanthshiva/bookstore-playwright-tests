@@ -1,57 +1,44 @@
-const fs = require('fs');
-const path = require('path');
 const { execSync } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 
-// Get shard information from environment variables
-const shardIndex = parseInt(process.env.SHARD || '1');
-const totalShards = parseInt(process.env.SHARD_COUNT || '1');
+function runShardedFeatures() {
+    const args = process.argv.slice(2);
+    const shardArg = args.find(arg => arg.startsWith('--shard='));
+    const totalShardsArg = args.find(arg => arg.startsWith('--total-shards='));
+    
+    if (!shardArg || !totalShardsArg) {
+        console.error('Please provide both --shard and --total-shards arguments');
+        process.exit(1);
+    }
 
-// Get all feature files
-const featuresDir = path.join(__dirname, '../src/tests/features');
-const featureFiles = fs.readdirSync(featuresDir)
-    .filter(file => file.endsWith('.feature'))
-    .sort();
+    const currentShard = parseInt(shardArg.split('=')[1]);
+    const totalShards = parseInt(totalShardsArg.split('=')[1]);
 
-// Calculate which features to run in this shard
-const featuresPerShard = Math.ceil(featureFiles.length / totalShards);
-const startIndex = (shardIndex - 1) * featuresPerShard;
-const endIndex = Math.min(startIndex + featuresPerShard, featureFiles.length);
+    // Ensure reports directory exists
+    const reportsDir = path.join(process.cwd(), 'reports', 'cucumber');
+    if (!fs.existsSync(reportsDir)) {
+        fs.mkdirSync(reportsDir, { recursive: true });
+    }
 
-// Get this shard's feature files
-const shardFeatures = featureFiles.slice(startIndex, endIndex);
-
-console.log(`Shard ${shardIndex}/${totalShards} running ${shardFeatures.length} features`);
-
-// Create reports directory if it doesn't exist
-const reportsDir = path.join(__dirname, '../reports/cucumber');
-if (!fs.existsSync(reportsDir)) {
-    fs.mkdirSync(reportsDir, { recursive: true });
-}
-
-// Array to store all reports
-let allReports = [];
-
-// Run each feature file
-shardFeatures.forEach((feature, index) => {
-    const featurePath = path.join(featuresDir, feature);
-    const reportPath = path.join(reportsDir, `cucumber-report-${shardIndex}-${index}.json`);
-    console.log(`Running feature ${index + 1}/${shardFeatures.length}: ${feature}`);
+    // Run cucumber with proper sharding and report configuration
+    const reportPath = path.join(reportsDir, `cucumber-report-shard-${currentShard}.json`);
     
     try {
-        execSync(`cucumber-js --config ./config/cucumber.js --format json:${reportPath} --format summary "${featurePath}"`, {
-            stdio: 'inherit'
-        });
-        
-        // Read the report
-        if (fs.existsSync(reportPath)) {
-            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-            allReports = allReports.concat(report);
-        }
+        execSync(
+            `cucumber-js --config ./config/cucumber.js ` +
+            `--format json:${reportPath} ` +
+            `--format summary ` +
+            `--parallel ${totalShards} ` +
+            `--parallel-type features ` +
+            `--retry 1 ` +
+            `--tags "not @skip"`,
+            { stdio: 'inherit' }
+        );
     } catch (error) {
-        console.error(`Error running feature ${feature}:`, error);
+        console.error(`Error running cucumber tests for shard ${currentShard}:`, error);
+        process.exit(1);
     }
-});
+}
 
-// Write combined report for this shard
-const combinedReportPath = path.join(reportsDir, `cucumber-report-${shardIndex}.json`);
-fs.writeFileSync(combinedReportPath, JSON.stringify(allReports, null, 2));
+runShardedFeatures();
