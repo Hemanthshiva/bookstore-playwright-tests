@@ -169,15 +169,24 @@ jobs:
         run: |
           # Check for test results
           if [ -d "temp-reports/test-results" ]; then
-          if [ -d "temp-reports/results/blob-report" ]; then
-            echo "Found blob reports, merging..."
-            npx playwright merge-reports --reporter html temp-reports/results/blob-report
-            cp -r playwright-report/* merged-reports/playwright/
-          elif [ -d "temp-reports/report" ]; then
-            echo "No blob reports found, copying HTML report..."
-            cp -r temp-reports/report/* merged-reports/playwright/ho "No test results directory found"
+            if [ -d "temp-reports/results/blob-report" ]; then
+              echo "Found blob reports, merging..."
+              npx playwright merge-reports --reporter html temp-reports/results/blob-report
+              cp -r playwright-report/* merged-reports/playwright/
+            elif [ -d "temp-reports/report" ]; then
+              echo "No blob reports found, copying HTML report..."
+              cp -r temp-reports/report/* merged-reports/playwright/
+            else
+              echo "No Playwright reports found"
+            fi
+          else
+            echo "No test results directory found"
             # Fallback to copying HTML report if available
-            echo "No Playwright reports found"
+            if [ -d "temp-reports/report" ]; then
+              echo "Falling back to HTML report..."
+              cp -r temp-reports/report/* merged-reports/playwright/
+            fi
+          fi
       - name: Merge Cucumber Reports
         working-directory: playwright-tests
         run: |
