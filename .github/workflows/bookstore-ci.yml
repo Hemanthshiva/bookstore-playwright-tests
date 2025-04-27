@@ -157,26 +157,38 @@ jobs:
 
       - name: Merge Playwright Reports
         run: |
-          # First, find and copy all test result files
-          if [ -d "downloaded-reports/test-results" ]; then
-            find downloaded-reports/test-results -type f -name "*.zip" -exec cp {} temp-playwright-reports/ \;
-          fi
+          # Copy the raw test results for merging
+          mkdir -p temp-playwright-reports
           
-          # Then copy any trace files
-          if [ -d "downloaded-reports/playwright-report" ]; then
-            cp -r downloaded-reports/playwright-report/* temp-playwright-reports/ || true
-          fi
+          echo "Checking downloaded reports structure:"
+          ls -R downloaded-reports/
           
-          echo "Content of temp-playwright-reports:"
+          # Copy all test results directories from each shard
+          for dir in downloaded-reports/test-results/*/; do
+            if [ -d "$dir" ]; then
+              echo "Copying test results from $dir"
+              cp -r "$dir"* temp-playwright-reports/ || true
+            fi
+          done
+          
+          echo "Content of temp-playwright-reports after copying:"
           ls -la temp-playwright-reports/
           
-          # Only try to merge if we have files
+          # Generate merged HTML report
           if [ "$(ls -A temp-playwright-reports)" ]; then
-            npx playwright merge-reports --reporter html temp-playwright-reports
+            echo "Generating merged report..."
+            cd playwright-tests
+            npx playwright merge-reports --reporter html ../temp-playwright-reports
+            cd ..
             mkdir -p merged-reports/playwright
             cp -r playwright-report/* merged-reports/playwright/
           else
-            echo "No Playwright reports found to merge"
+            echo "No test results found to merge"
+            # Copy the existing report if merging isn't needed
+            if [ -d "downloaded-reports/playwright-report" ]; then
+              echo "Copying existing playwright report"
+              cp -r downloaded-reports/playwright-report/* merged-reports/playwright/
+            fi
           fi
 
       - name: Merge Cucumber Reports
