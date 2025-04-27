@@ -174,17 +174,16 @@ jobs:
             mkdir -p merged-reports/cucumber
             
             # Create a Node.js script to properly merge JSON reports
-            cat << 'EOF' > merge-reports.js
-            const fs = require('fs');
-            const path = require('path');
+            echo 'const fs = require("fs");
+            const path = require("path");
 
             function mergeReports() {
-              const reportsDir = 'temp-reports/cucumber';
-              const outputDir = 'merged-reports/cucumber';
-              const files = fs.readdirSync(reportsDir).filter(f => f.endsWith('.json'));
+              const reportsDir = "temp-reports/cucumber";
+              const outputDir = "merged-reports/cucumber";
+              const files = fs.readdirSync(reportsDir).filter(f => f.endsWith(".json"));
               
               if (files.length === 0) {
-                console.error('No JSON reports found to merge');
+                console.error("No JSON reports found to merge");
                 process.exit(1);
               }
 
@@ -192,7 +191,7 @@ jobs:
               
               files.forEach(file => {
                 try {
-                  const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
+                  const content = fs.readFileSync(path.join(reportsDir, file), "utf8");
                   const report = JSON.parse(content);
                   if (Array.isArray(report)) {
                     mergedFeatures = mergedFeatures.concat(report);
@@ -204,7 +203,7 @@ jobs:
 
               // Write the merged report
               fs.writeFileSync(
-                path.join(outputDir, 'cucumber-report.json'),
+                path.join(outputDir, "cucumber-report.json"),
                 JSON.stringify(mergedFeatures, null, 2)
               );
               
@@ -217,8 +216,7 @@ jobs:
               });
             }
 
-            mergeReports();
-            EOF
+            mergeReports();' > merge-reports.js
 
             # Run the merge script
             node merge-reports.js
