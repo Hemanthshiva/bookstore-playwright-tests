@@ -92,6 +92,7 @@ jobs:
         working-directory: playwright-tests
         run: |
           npm run generate:reports
+          npm run cleanup:reports
 
       - name: Upload Test Results
         if: always()
