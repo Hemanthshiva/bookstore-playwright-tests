@@ -12,6 +12,37 @@ if (!fs.existsSync(reportsDir)) {
 // Define report path
 const reportPath = path.join(__dirname, "..", "reports", "cucumber-html-report");
 
+// Function to validate and fix JSON files
+function validateAndFixJsonFiles(jsonDir) {
+  const files = fs.readdirSync(jsonDir).filter(file => file.endsWith('.json'));
+  let validFiles = [];
+
+  for (const file of files) {
+    const filePath = path.join(jsonDir, file);
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      // Try to parse the JSON to validate it
+      JSON.parse(content);
+      validFiles.push(filePath);
+    } catch (error) {
+      console.warn(`Warning: Invalid JSON in file ${file}, skipping...`);
+      console.error(error.message);
+    }
+  }
+
+  if (validFiles.length === 0) {
+    console.error('No valid JSON files found!');
+    process.exit(1);
+  }
+
+  return validFiles;
+}
+
+// Validate JSON files before generating report
+console.log('Validating JSON files...');
+const jsonDir = path.join(__dirname, "..", "reports", "cucumber");
+validateAndFixJsonFiles(jsonDir);
+
 // Generate the report
 report.generate({
   jsonDir: path.join(__dirname, "..", "reports", "cucumber"),

@@ -173,26 +173,59 @@ jobs:
             echo "Found cucumber reports, merging..."
             mkdir -p merged-reports/cucumber
             
-            # Combine all JSON reports into one
-            echo "[" > merged-reports/cucumber/combined-report.json
-            first=true
-            for report in temp-reports/cucumber/*.json; do
-              if [ "$first" = true ]; then
-                cat "$report" | sed '$s/]$//' >> merged-reports/cucumber/combined-report.json
-                first=false
-              else
-                echo "," >> merged-reports/cucumber/combined-report.json
-                cat "$report" | sed '1s/^\[//' | sed '$s/]$//' >> merged-reports/cucumber/combined-report.json
-              fi
-            done
-            echo "]" >> merged-reports/cucumber/combined-report.json
+            # Create a Node.js script to properly merge JSON reports
+            cat << 'EOF' > merge-reports.js
+            const fs = require('fs');
+            const path = require('path');
+
+            function mergeReports() {
+              const reportsDir = 'temp-reports/cucumber';
+              const outputDir = 'merged-reports/cucumber';
+              const files = fs.readdirSync(reportsDir).filter(f => f.endsWith('.json'));
+              
+              if (files.length === 0) {
+                console.error('No JSON reports found to merge');
+                process.exit(1);
+              }
+
+              let mergedFeatures = [];
+              
+              files.forEach(file => {
+                try {
+                  const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
+                  const report = JSON.parse(content);
+                  if (Array.isArray(report)) {
+                    mergedFeatures = mergedFeatures.concat(report);
+                  }
+                } catch (error) {
+                  console.error(`Error processing ${file}:`, error.message);
+                }
+              });
+
+              // Write the merged report
+              fs.writeFileSync(
+                path.join(outputDir, 'cucumber-report.json'),
+                JSON.stringify(mergedFeatures, null, 2)
+              );
+              
+              // Also copy individual reports for reference
+              files.forEach(file => {
+                fs.copyFileSync(
+                  path.join(reportsDir, file),
+                  path.join(outputDir, file)
+                );
+              });
+            }
+
+            mergeReports();
+            EOF
+
+            # Run the merge script
+            node merge-reports.js
             
-            # Copy individual reports as well
-            cp temp-reports/cucumber/*.json merged-reports/cucumber/
-            
-            # Generate HTML report if generator exists
+            # Generate HTML report
             if [ -f "report-generator/cucumber-report.js" ]; then
-              echo "Generating HTML report from combined JSON..."
+              echo "Generating HTML report from merged JSON..."
               node report-generator/cucumber-report.js
             fi
           else
