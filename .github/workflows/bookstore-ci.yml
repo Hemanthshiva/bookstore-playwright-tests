@@ -144,46 +144,15 @@ jobs:
       - name: Generate Cucumber HTML Report
         run: |
           # Install required packages
-          npm install cucumber-html-reporter glob glob
+          npm install cucumber-html-reporter
           
           # Create a Node.js script to generate HTML report
           cat > generate-report.js << 'EOL'
           const reporter = require('cucumber-html-reporter');
-          const glob = require('glob');
-          const path = require('path');
           
-          // Find all JSON files
-          const jsonFiles = glob.sync('test-reports/cucumber/**/*.json');
-          
-          if (jsonFiles.length === 0) {
-            console.error('No JSON files found');
-            process.exit(1);
-          }
-          
-          // Use the first JSON file foundconst glob = require('glob');
-          const path = require('path');
-          
-            jsonFile: jsonFiles[0],
-          const jsonFiles = glob.sync('test-reports/cucumber/**/*.json');
-          
-          if (jsonFiles.length === 0) {
-            launchReport: false,
-            metadata: {
-              "Test Environment": "CI/CD Pipeline",
-              "Browser": "Chrome",
-              "Platform": "Ubuntu-Latest",
-              "Executed": new Date().toISOString()
-            }
-          };
-          
-          console.log('Generating report from:', jsonFiles[0]);}
-          
-          //           
-          # List the contents of the cucumber report directory
-          echo "Contents of test-reports/cucumber:"
-          ls -la test-reports/cucumber/          const options = {
+          const options = {
             theme: 'bootstrap',
-            jsonFile: jsonFiles[0],
+            jsonFile: 'test-reports/cucumber/cucumber-report.json',
             output: 'test-reports/cucumber/index.html',
             reportSuiteAsScenarios: true,
             scenarioTimestamp: true,
@@ -196,7 +165,7 @@ jobs:
             }
           };
           
-          console.log('Generating report from:', jsonFiles[0]);
+          console.log('Generating report from: test-reports/cucumber/cucumber-report.json');
           reporter.generate(options);
           EOL
           
