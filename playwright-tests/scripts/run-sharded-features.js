@@ -28,16 +28,30 @@ if (!fs.existsSync(reportsDir)) {
     fs.mkdirSync(reportsDir, { recursive: true });
 }
 
+// Array to store all reports
+let allReports = [];
+
 // Run each feature file
 shardFeatures.forEach((feature, index) => {
     const featurePath = path.join(featuresDir, feature);
+    const reportPath = path.join(reportsDir, `cucumber-report-${shardIndex}-${index}.json`);
     console.log(`Running feature ${index + 1}/${shardFeatures.length}: ${feature}`);
     
     try {
-        execSync(`cucumber-js --config ./config/cucumber.js --format json:reports/cucumber/cucumber-report-${shardIndex}-${index}.json --format summary "${featurePath}"`, {
+        execSync(`cucumber-js --config ./config/cucumber.js --format json:${reportPath} --format summary "${featurePath}"`, {
             stdio: 'inherit'
         });
+        
+        // Read the report
+        if (fs.existsSync(reportPath)) {
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            allReports = allReports.concat(report);
+        }
     } catch (error) {
         console.error(`Error running feature ${feature}:`, error);
     }
 });
+
+// Write combined report for this shard
+const combinedReportPath = path.join(reportsDir, `cucumber-report-${shardIndex}.json`);
+fs.writeFileSync(combinedReportPath, JSON.stringify(allReports, null, 2));

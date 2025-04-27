@@ -72,23 +72,22 @@ jobs:
       - name: Run Mock Tests
         working-directory: playwright-tests
         env:
-          PLAYWRIGHT_REUSE_SERVER: "true"
+            PLAYWRIGHT_REUSE_SERVER: "true"
+            SHARD: ${{ matrix.shard }}
+            SHARD_COUNT: 2
         run: |
-          mkdir -p test-results reports/cucumber reports/playwright reports/cucumber reports/playwright
-          npm run mock -- --shard=${{ matrix.shard }}/2 --reporter=blob,html          npm run feature
-          npm run generate:reports          npm run feature
-          npm run generate:reports
+            mkdir -p test-results reports/cucumber reports/playwright
+            npm run mock -- --shard=${{ matrix.shard }}/2 --reporter=blob,html
+  
+      - name: Run Feature Tests
+        working-directory: playwright-tests
+        env:
+            SHARD: ${{ matrix.shard }}
+            SHARD_COUNT: 2
+        run: |
+            npm run feature:shard
+            npm run generate:reports
           
-      - name: Upload Playwright Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results-${{ matrix.shard }}
-          path: |
-            playwright-tests/playwright-report/
-            playwright-tests/blob-report/
-          if-no-files-found: warn
-
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,9 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report-${{ matrix.shard }}
-          path: |
-            playwright-tests/reports/cucumber/
-            playwright-tests/reports/cucumber/cucumber-report.json
+          path: playwright-tests/reports/cucumber/*.json
           if-no-files-found: warn
 
       - name: Upload Angular Logs
@@ -114,11 +111,6 @@ jobs:
           name: angular-logs-${{ matrix.shard }}
           path: angular.log
 
-      - name: Stop Angular App
-        if: always()
-        run: |
-          npx kill-port 4200 || true
-          sleep 2
 
   merge-reports:
     needs: playwright-tests
