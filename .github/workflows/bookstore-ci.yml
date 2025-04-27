@@ -88,11 +88,6 @@ jobs:
           npx playwright install --with-deps chromium
           npm install -g @playwright/test
 
-      # - name: Start Angular Server
-      #   run: |
-      #     npm run start &
-      #     sleep 30
-
       - name: Run All Tests
         working-directory: playwright-tests
         env:
@@ -140,27 +135,74 @@ jobs:
         with:
           name: cucumber-report
           path: test-reports/cucumber
+        
+      - name: List downloaded artifacts
+        run: |
+          echo "Contents of test-reports directory:"
+          ls -R test-reports/
 
       - name: Generate Cucumber HTML Report
         run: |
-          # Install cucumber-html-reporter
-          npm install cucumber-html-reporter
+          # Install required packages
+          npm install cucumber-html-reporter glob glob
           
           # Create a Node.js script to generate HTML report
           cat > generate-report.js << 'EOL'
           const reporter = require('cucumber-html-reporter');
+          const glob = require('glob');
+          const path = require('path');
           
-          const options = {
+          // Find all JSON files
+          const jsonFiles = glob.sync('test-reports/cucumber/**/*.json');
+          
+          if (jsonFiles.length === 0) {
+            console.error('No JSON files found');
+            process.exit(1);
+          }
+          
+          // Use the first JSON file foundconst glob = require('glob');
+          const path = require('path');
+          
+            jsonFile: jsonFiles[0],
+          const jsonFiles = glob.sync('test-reports/cucumber/**/*.json');
+          
+          if (jsonFiles.length === 0) {
+            launchReport: false,
+            metadata: {
+              "Test Environment": "CI/CD Pipeline",
+              "Browser": "Chrome",
+              "Platform": "Ubuntu-Latest",
+              "Executed": new Date().toISOString()
+            }
+          };
+          
+          console.log('Generating report from:', jsonFiles[0]);}
+          
+          //           
+          # List the contents of the cucumber report directory
+          echo "Contents of test-reports/cucumber:"
+          ls -la test-reports/cucumber/          const options = {
             theme: 'bootstrap',
-            jsonFile: 'test-reports/cucumber/*.json',
+            jsonFile: jsonFiles[0],
             output: 'test-reports/cucumber/index.html',
             reportSuiteAsScenarios: true,
             scenarioTimestamp: true,
-            launchReport: false
+            launchReport: false,
+            metadata: {
+              "Test Environment": "CI/CD Pipeline",
+              "Browser": "Chrome",
+              "Platform": "Ubuntu-Latest",
+              "Executed": new Date().toISOString()
+            }
           };
           
+          console.log('Generating report from:', jsonFiles[0]);
           reporter.generate(options);
           EOL
+          
+          # List the contents of the cucumber report directory
+          echo "Contents of test-reports/cucumber:"
+          ls -la test-reports/cucumber/
           
           # Run the script
           node generate-report.js
