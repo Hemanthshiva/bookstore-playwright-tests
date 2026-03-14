@@ -6,9 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Allow push to gh-pages for report history; Pages can deploy from that branch
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -121,9 +121,18 @@ jobs:
     if: always()
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.pages-url.outputs.url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Pages URL
+        id: pages-url
+        run: echo "url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" >> $GITHUB_OUTPUT
+
       - name: Download Playwright Report
         uses: actions/download-artifact@v4
         with:
@@ -176,6 +185,53 @@ jobs:
           # Run the script
           node generate-report.js
 
+      - name: Fetch gh-pages branch for report history
+        run: git fetch origin gh-pages || true
+
+      - name: Organize per-run report assets and stats
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          GIT_SHA: ${{ github.sha }}
+          GIT_BRANCH: ${{ github.ref }}
+        run: |
+          RUN_ID_DIR="run-${RUN_NUMBER}"
+          export RUN_ID="${RUN_ID_DIR}"
+          export REPORT_URL="/runs/${RUN_ID_DIR}/cucumber/index.html"
+
+          echo "Using run directory: $RUN_ID_DIR"
+
+          mkdir -p "test-reports/runs/${RUN_ID_DIR}/cucumber"
+          mv test-reports/cucumber/index.html "test-reports/runs/${RUN_ID_DIR}/cucumber/index.html"
+          cp test-reports/cucumber/cucumber-report.json "test-reports/runs/${RUN_ID_DIR}/cucumber/cucumber-report.json"
+
+          node playwright-tests/report-generator/collect-stats.js \
+            --input "test-reports/runs/${RUN_ID_DIR}/cucumber/cucumber-report.json" \
+            --output "test-reports/runs/${RUN_ID_DIR}/run-stats.json"
+
+          # Merge with existing runs index from gh-pages (or start with [])
+          git show origin/gh-pages:runs-index.json > test-reports/runs-index.json 2>/dev/null || echo '[]' > test-reports/runs-index.json
+
+          node playwright-tests/report-generator/update-runs-index.js \
+            --stats "test-reports/runs/${RUN_ID_DIR}/run-stats.json" \
+            --index "test-reports/runs-index.json"
+
+          echo "RUN_ID_DIR=${RUN_ID_DIR}" >> $GITHUB_ENV
+
+      - name: Setup Node for dashboard build
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Build report dashboard
+        run: |
+          cd dashboard
+          npm ci
+          npm run build
+
+      - name: Copy dashboard into report payload
+        run: cp -r dashboard/dist test-reports/dashboard
+
       - name: Create index.html
         run: |
           cat > test-reports/index.html << 'EOL'
@@ -183,76 +239,79 @@ jobs:
           <html>
           <head>
               <title>Test Reports</title>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
               <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      margin: 0;
-                      padding: 20px;
-                      background-color: #f5f5f5;
-                  }
-                  .container {
-                      max-width: 800px;
-                      margin: 0 auto;
-                      background-color: white;
-                      padding: 20px;
-                      border-radius: 8px;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                  }
-                  h1 {
-                      color: #333;
-                      text-align: center;
-                      margin-bottom: 30px;
-                  }
-                  .report-section {
-                      margin: 20px 0;
-                      padding: 20px;
-                      border: 1px solid #ddd;
-                      border-radius: 4px;
-                  }
-                  .report-link {
-                      display: block;
-                      padding: 15px 20px;
-                      background: #007bff;
-                      color: white;
-                      text-decoration: none;
-                      border-radius: 5px;
-                      text-align: center;
-                      margin: 10px 0;
-                      transition: background-color 0.3s;
-                  }
-                  .report-link:hover {
-                      background: #0056b3;
-                  }
-                  h2 {
-                      color: #444;
-                      margin-bottom: 15px;
-                  }
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                  h1 { color: #333; text-align: center; margin-bottom: 30px; }
+                  .report-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 4px; }
+                  .report-link { display: block; padding: 15px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; text-align: center; margin: 10px 0; }
+                  .report-link:hover { background: #0056b3; }
+                  h2 { color: #444; margin-bottom: 15px; }
               </style>
           </head>
           <body>
               <div class="container">
                   <h1>Test Reports</h1>
                   <div class="report-section">
-                      <h2>Playwright Tests Report</h2>
+                      <h2>Report dashboard (last 10 runs, flaky & failing)</h2>
+                      <a class="report-link" href="./dashboard/">Open dashboard</a>
+                  </div>
+                  <div class="report-section">
+                      <h2>Playwright report (latest run)</h2>
                       <a class="report-link" href="./playwright/index.html">View Playwright Report</a>
                   </div>
                   <div class="report-section">
-                      <h2>Cucumber Tests Report</h2>
-                      <a class="report-link" href="./cucumber/index.html">View Cucumber Report</a>
+                      <h2>Cucumber reports (per run)</h2>
+                      <a class="report-link" href="./dashboard/">View runs in dashboard</a>
                   </div>
               </div>
           </body>
           </html>
           EOL
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Copy report payload to temp
+        run: cp -r test-reports /tmp/report-payload
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: test-reports
+      - name: Checkout gh-pages and deploy
+        env:
+          RUN_ID_DIR: ${{ env.RUN_ID_DIR }}
+        run: |
+          git fetch origin gh-pages || true
+          if git show-ref --verify refs/remotes/origin/gh-pages >/dev/null 2>&1; then
+            git checkout gh-pages
+            git pull origin gh-pages --rebase || true
+          else
+            git checkout --orphan gh-pages
+            git rm -rf . 2>/dev/null || true
+          fi
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          cp /tmp/report-payload/runs-index.json . 2>/dev/null || true
+          mkdir -p runs
+          cp -r /tmp/report-payload/runs/run-* runs/ 2>/dev/null || true
+          cp -r /tmp/report-payload/playwright . 2>/dev/null || true
+          cp -r /tmp/report-payload/dashboard . 2>/dev/null || true
+          cp /tmp/report-payload/index.html . 2>/dev/null || true
+
+          # Prune run dirs not in the index (keep last 10)
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const index = JSON.parse(fs.readFileSync('runs-index.json', 'utf8'));
+            const keep = new Set(index.map(r => r.runId));
+            const runsDir = path.join(process.cwd(), 'runs');
+            if (fs.existsSync(runsDir)) {
+              for (const name of fs.readdirSync(runsDir)) {
+                if (!keep.has(name)) {
+                  fs.rmSync(path.join(runsDir, name), { recursive: true });
+                }
+              }
+            }
+          "
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Report: run ${RUN_ID_DIR} and dashboard"
+          git push origin gh-pages

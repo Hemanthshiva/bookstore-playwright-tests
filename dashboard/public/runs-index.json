@@ -1,0 +1,14 @@
+[
+  {
+    "runId": "run-1",
+    "runNumber": 1,
+    "timestamp": "2025-03-14T10:00:00.000Z",
+    "gitRef": "refs/heads/main",
+    "reportUrl": "/runs/run-1/cucumber/index.html",
+    "stats": { "total": 5, "passed": 4, "failed": 1, "skipped": 0 },
+    "tests": [
+      { "id": "Feature A → Scenario One", "feature": "Feature A", "scenario": "Scenario One", "status": "passed" },
+      { "id": "Feature A → Scenario Two", "feature": "Feature A", "scenario": "Scenario Two", "status": "failed" }
+    ]
+  }
+]
