@@ -42,7 +42,7 @@ jobs:
           npm install @rollup/rollup-linux-x64-gnu
 
       - name: Build Application
-        run: npm run build -- --configuration=production
+        run: npm run build -- --configuration=production --output-mode=static --no-server
 
       - name: Run Unit Tests
         run: npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
