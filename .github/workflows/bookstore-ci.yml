@@ -44,6 +44,11 @@ jobs:
       - name: Build Application
         run: npm run build -- --configuration=production --output-mode=static --no-server
 
+      - name: Verify build configuration
+        run: |
+          echo "Checking angular.json build defaultConfiguration..."
+          cat angular.json | grep -A 10 "\"build\":" | grep "defaultConfiguration"
+
       - name: Run Unit Tests
         run: npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
 
