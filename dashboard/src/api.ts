@@ -50,9 +50,15 @@ export function runReportHref(run: RunEntry): string | null {
   const url = run.reportUrl;
   if (!url) return null;
   if (url.startsWith('http')) return url;
+  
   const base = getReportsBase();
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const path = url.startsWith('/') ? url.slice(1) : url;
-  const fullPath = base ? `${base.replace(/\/$/, '')}/${path}` : `/${path}`;
-  return `${origin}${fullPath}`;
+  
+  // On GitHub Pages, we want an absolute-looking path from the site root.
+  // If base is /repo-name, we want /repo-name/runs/...
+  const fullPath = base 
+    ? `/${base.replace(/^\/|\/$/g, '')}/${path}`.replace(/\/+/g, '/')
+    : `/${path}`.replace(/\/+/g, '/');
+    
+  return fullPath;
 }

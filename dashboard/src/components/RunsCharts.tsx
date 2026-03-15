@@ -58,22 +58,20 @@ export function RunsCharts({ runs }: Props) {
     ],
   };
 
-  const lineData = {
+
+  const passRateData = {
     labels: labels(reversed),
     datasets: [
       {
-        label: 'Total',
-        data: reversed.map((r) => r.stats?.total ?? 0),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        label: 'Pass Rate (%)',
+        data: reversed.map((r) => {
+          const total = r.stats?.total ?? 0;
+          return total > 0 ? ((r.stats?.passed ?? 0) / total) * 100 : 0;
+        }),
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
         fill: true,
-      },
-      {
-        label: 'Failed',
-        data: reversed.map((r) => r.stats?.failed ?? 0),
-        borderColor: 'rgb(239, 68, 68)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
+        tension: 0.4,
       },
     ],
   };
@@ -92,15 +90,15 @@ export function RunsCharts({ runs }: Props) {
   return (
     <div className="charts">
       <div className="chart-box">
-        <h3>Pass / Fail / Skip per run</h3>
+        <h3>Pass Rate Trend (%)</h3>
         <div className="chart-inner">
-          <Bar data={barData} options={options} />
+          <Line data={passRateData} options={{ ...options, scales: { y: { min: 0, max: 100 } } }} />
         </div>
       </div>
       <div className="chart-box">
-        <h3>Total and failed tests over last runs</h3>
+        <h3>Pass / Fail / Skip per run</h3>
         <div className="chart-inner">
-          <Line data={lineData} options={options} />
+          <Bar data={barData} options={options} />
         </div>
       </div>
     </div>

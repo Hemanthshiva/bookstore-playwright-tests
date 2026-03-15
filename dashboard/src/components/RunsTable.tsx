@@ -21,9 +21,8 @@ export function RunsTable({ runs, flakyCountByRun }: Props) {
             <th>Run</th>
             <th>Date / Time</th>
             <th>Branch</th>
-            <th>Total</th>
-            <th>Passed</th>
-            <th>Failed</th>
+            <th>Stats</th>
+            <th>Pass Rate</th>
             <th>Flaky (in history)</th>
             <th>Report</th>
           </tr>
@@ -35,6 +34,11 @@ export function RunsTable({ runs, flakyCountByRun }: Props) {
             const flaky = flakyCountByRun?.get(run.runId) ?? 0;
             const reportHref = runReportHref(run);
 
+            const total = run.stats?.total ?? 0;
+            const passed = run.stats?.passed ?? 0;
+            const failed = run.stats?.failed ?? 0;
+            const passRate = total > 0 ? (passed / total) * 100 : 0;
+
             return (
               <tr key={run.runId}>
                 <td>
@@ -44,9 +48,16 @@ export function RunsTable({ runs, flakyCountByRun }: Props) {
                 <td>
                   <code>{branch}</code>
                 </td>
-                <td>{run.stats?.total ?? '—'}</td>
-                <td className="stat-passed">{run.stats?.passed ?? '—'}</td>
-                <td className="stat-failed">{run.stats?.failed ?? '—'}</td>
+                <td>
+                  <span className="stat-pill passed">{passed}P</span>
+                  <span className="stat-pill failed">{failed}F</span>
+                </td>
+                <td style={{ minWidth: '120px' }}>
+                  <div className="pass-rate-bar-container">
+                    <div className="pass-rate-bar" style={{ width: `${passRate}%` }} />
+                    <span className="pass-rate-text">{passRate.toFixed(0)}%</span>
+                  </div>
+                </td>
                 <td>{flaky}</td>
                 <td>
                   {reportHref ? (

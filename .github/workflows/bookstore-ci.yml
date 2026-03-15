@@ -197,7 +197,7 @@ jobs:
         run: |
           RUN_ID_DIR="run-${RUN_NUMBER}"
           export RUN_ID="${RUN_ID_DIR}"
-          export REPORT_URL="/runs/${RUN_ID_DIR}/cucumber/index.html"
+          export REPORT_URL="runs/${RUN_ID_DIR}/cucumber/index.html"
 
           echo "Using run directory: $RUN_ID_DIR"
 
