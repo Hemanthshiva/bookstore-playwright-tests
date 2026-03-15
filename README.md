@@ -49,7 +49,7 @@ A simple and efficient bookstore catalog application built with Angular, designe
    ng serve
    ```
 
-The application will be available at `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+The application will be available at `http://127.0.0.1:4200/books`. The app will automatically reload if you change any of the source files.
 
 ## 🛠️ Development
 

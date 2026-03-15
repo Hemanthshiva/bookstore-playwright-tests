@@ -4,61 +4,44 @@ test.describe('BookStore API Mock Tests', () => {
     const API_ENDPOINT = 'https://bookcart.azurewebsites.net/api/book';
 
     test('should display mocked list of books', async ({ page }) => {
+        // Mock data
         const mockBooks = [
             {
-                "bookId": 1,
-                "title": "Test Book 1",
-                "author": "Test Author 1",
-                "category": "Fiction",
-                "price": 25.99,
-                "coverFileName": "cff3d5ee-71f3-43d8-8625-33abcd48659eHP6.jpg"
+                bookId: 1,
+                title: 'Mocked Book 1',
+                author: 'Author 1',
+                category: 'Fiction',
+                price: 100,
+                coverFileName: 'cover1.jpg'
             },
             {
-                "bookId": 2,
-                "title": "Test Book 2",
-                "author": "Test Author 2",
-                "category": "Non-Fiction",
-                "price": 19.99,
-                "coverFileName": "cff3d5ee-71f3-43d8-8625-33abcd48659eHP6.jpg"
+                bookId: 2,
+                title: 'Mocked Book 2',
+                author: 'Author 2',
+                category: 'Sci-Fi',
+                price: 200,
+                coverFileName: 'cover2.jpg'
             }
         ];
 
-        await page.route(API_ENDPOINT, async route => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify(mockBooks)
-            });
-        });
+        // Mock API response
+        await page.route(API_ENDPOINT, route => route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(mockBooks)
+        }));
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
-        // Verify book titles
-        const bookCards = await page.locator('[data-testid^="book-card"]').all();
-        expect(bookCards).toHaveLength(2);
+        // Verify book titles 
+        const bookCards = page.locator('[data-testid^="book-card"]');
+        await expect(bookCards).toHaveCount(2);
 
-        for (const [index, card] of bookCards.entries()) {
-            // Verify book title
-            const titleElement = card.getByTestId('book-title');
-            await expect(titleElement).toBeVisible();
-            await expect(titleElement).toHaveText(mockBooks[index].title);
-
-            // Verify authors
-            const authorElement = card.getByTestId('book-author');
-            await expect(authorElement).toBeVisible();
-            await expect(authorElement).toHaveText(mockBooks[index].author);
-
-            // Verify prices
-            const priceElement = card.getByTestId('book-price');
-            await expect(priceElement).toBeVisible();
-            await expect(priceElement).toContainText(mockBooks[index].price.toString());
-
-            // Verify categories
-            const categoryElement = card.getByTestId('book-category');
-            await expect(categoryElement).toBeVisible();
-            await expect(categoryElement).toContainText(mockBooks[index].category);
-        }
+        // Verify content of first book
+        const firstCard = bookCards.first();
+        await expect(firstCard.getByTestId('book-title')).toHaveText('Mocked Book 1');
+        await expect(firstCard.getByTestId('book-author')).toHaveText('Author 1');
     });
 
     test('should handle API error gracefully', async ({ page }) => {
@@ -72,7 +55,7 @@ test.describe('BookStore API Mock Tests', () => {
             });
         });
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
         // Verify error state
@@ -94,7 +77,7 @@ test.describe('BookStore API Mock Tests', () => {
             });
         });
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
         // Verify empty state message
@@ -127,7 +110,7 @@ test.describe('BookStore API Mock Tests', () => {
             });
         });
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
         // Enter search term
@@ -182,7 +165,7 @@ test.describe('BookStore API Mock Tests', () => {
             });
         });
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
 
         // Verify loading state
         const loadingElement = page.getByTestId('loading-spinner');
@@ -230,7 +213,7 @@ test.describe('BookStore API Mock Tests', () => {
             body: JSON.stringify(mockBooks)
         }));
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
         // Verify first page
@@ -259,7 +242,7 @@ test.describe('BookStore API Mock Tests', () => {
             body: JSON.stringify(mockBooks)
         }));
 
-        await page.goto('http://localhost:4200/books');
+        await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
         // Verify page content

@@ -46,9 +46,9 @@ export default defineConfig({
         // }
     ],
     webServer: {
-        command: 'cd .. && npx ng serve',
-        port: 4200,
-        timeout: 120000, // 2 minutes timeout for build and serve
+        command: 'cd .. && npx ng serve --host 127.0.0.1 --port 4200 --configuration development',
+        url: 'http://127.0.0.1:4200',
+        timeout: 180000,
         reuseExistingServer: !process.env.CI,
         stdout: 'pipe',
         stderr: 'pipe',
