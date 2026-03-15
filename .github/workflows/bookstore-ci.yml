@@ -47,7 +47,7 @@ jobs:
       - name: Verify build configuration
         run: |
           echo "Checking angular.json build defaultConfiguration..."
-          cat angular.json | grep -A 10 "\"build\":" | grep "defaultConfiguration"
+          node -e "const config = JSON.parse(require('fs').readFileSync('angular.json', 'utf8')); const buildConfig = config.projects.bookstore.architect.build.defaultConfiguration; console.log('Build defaultConfiguration:', buildConfig); if (buildConfig !== 'development') { console.error('Error: defaultConfiguration is not set to development'); process.exit(1); }"
 
       - name: Run Unit Tests
         run: npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
