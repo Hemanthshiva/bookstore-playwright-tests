@@ -1,7 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('BookStore API Mock Tests', () => {
-    const API_ENDPOINT = 'https://bookcart.azurewebsites.net/api/book';
+    // Use regex pattern for more flexible URL matching
+    const API_ENDPOINT_PATTERN = /api\/book/;
+
+    // Helper function to set up fallback mock
+    async function setupFallbackMock(page: any) {
+        const defaultMockBooks = require('../../../test-data/5-books-data.json');
+        // Set up a catch-all fallback route
+        await page.route(API_ENDPOINT_PATTERN, (route: { fulfill: (arg0: { status: number; contentType: string; body: string; }) => any; }) => route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(defaultMockBooks)
+        }));
+    }
 
     test('should display mocked list of books', async ({ page }) => {
         // Mock data
@@ -25,7 +37,7 @@ test.describe('BookStore API Mock Tests', () => {
         ];
 
         // Mock API response
-        await page.route(API_ENDPOINT, route => route.fulfill({
+        await page.route(API_ENDPOINT_PATTERN, route => route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(mockBooks)
@@ -45,7 +57,8 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should handle API error gracefully', async ({ page }) => {
-        await page.route(API_ENDPOINT, async route => {
+        // DO NOT use fallback for this test - we want the error to occur
+        await page.route(API_ENDPOINT_PATTERN, async route => {
             await route.fulfill({
                 status: 500,
                 contentType: 'application/json',
@@ -69,7 +82,11 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should handle empty book list', async ({ page }) => {
-        await page.route(API_ENDPOINT, async route => {
+        // Set up fallback first
+        await setupFallbackMock(page);
+        
+        // Override with empty list
+        await page.route(API_ENDPOINT_PATTERN, async route => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -91,6 +108,9 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should handle book search', async ({ page }) => {
+        // Set up fallback
+        await setupFallbackMock(page);
+        
         const searchResults = [
             {
                 "bookId": 1,
@@ -102,7 +122,8 @@ test.describe('BookStore API Mock Tests', () => {
             }
         ];
 
-        await page.route(API_ENDPOINT, async route => {
+        // Override with search results
+        await page.route(API_ENDPOINT_PATTERN, async route => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -145,6 +166,9 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should handle slow network response', async ({ page }) => {
+        // Set up fallback first
+        await setupFallbackMock(page);
+        
         const delayedBook = [
             {
                 "bookId": 1,
@@ -156,7 +180,8 @@ test.describe('BookStore API Mock Tests', () => {
             }
         ];
 
-        await page.route(API_ENDPOINT, async route => {
+        // Override with delayed response
+        await page.route(API_ENDPOINT_PATTERN, async route => {
             await new Promise(resolve => setTimeout(resolve, 3000));
             await route.fulfill({
                 status: 200,
@@ -204,10 +229,14 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should handle pagination correctly', async ({ page }) => {
+        // Set up fallback first
+        await setupFallbackMock(page);
+        
         // Mock API response with 12 books
         const mockBooks = require('../../../test-data/12-books-data.json');
 
-        await page.route(API_ENDPOINT, route => route.fulfill({
+        // Override with 12 books
+        await page.route(API_ENDPOINT_PATTERN, route => route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(mockBooks)
@@ -219,7 +248,6 @@ test.describe('BookStore API Mock Tests', () => {
         // Verify first page
         const pagination = page.getByTestId('paginator');
         const bookCards = page.locator('[data-testid^="book-card"]');
-        const categories = page.locator('[data-testid^="category-item"]');
 
         await expect(pagination).toBeVisible();
         await expect(bookCards).toHaveCount(10);
@@ -233,10 +261,13 @@ test.describe('BookStore API Mock Tests', () => {
     });
 
     test('should display books without pagination for small dataset', async ({ page }) => {
+        // Set up fallback (same as default)
+        await setupFallbackMock(page);
+        
         const mockBooks = require('../../../test-data/5-books-data.json');
 
         // Mock API response
-        await page.route(API_ENDPOINT, route => route.fulfill({
+        await page.route(API_ENDPOINT_PATTERN, route => route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(mockBooks)
@@ -247,7 +278,7 @@ test.describe('BookStore API Mock Tests', () => {
 
         // Verify page content
         const bookCards = page.locator('[data-testid^="book-card"]');
-        await expect(bookCards).toHaveCount(6);
+        await expect(bookCards).toHaveCount(mockBooks.length);
         
         // Paginator is visible but the "Next page" button should be disabled
         const pagination = page.getByTestId('paginator');
