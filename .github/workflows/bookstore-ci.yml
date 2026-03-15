@@ -45,6 +45,12 @@ jobs:
       - name: Build Application
         run: npm run build -- --configuration=production --output-mode=static --no-server
 
+      - name: Upload Production Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-build
+          path: dist/
+
       - name: Verify build configuration
         run: |
           echo "Checking angular.json build defaultConfiguration..."
@@ -95,6 +101,12 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
           npm install -g @playwright/test
+
+      - name: Download Production Build
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-build
+          path: dist/
 
       - name: Run All Tests
         working-directory: playwright-tests

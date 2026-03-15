@@ -46,11 +46,11 @@ export default defineConfig({
         // }
     ],
     webServer: {
-        command: 'cd .. && npx ng serve --host 127.0.0.1 --port 4200 --configuration development',
-        url: 'http://127.0.0.1:4200',
-        timeout: 180000,
+        // Uses the Angular dev server locally, but a fast static server in CI
+        command: process.env.CI
+            ? 'npx http-server ../dist/bookstore/browser -p 4200'
+            : 'npm run start',
+        port: 4200,
         reuseExistingServer: !process.env.CI,
-        stdout: 'pipe',
-        stderr: 'pipe',
     },
 });
