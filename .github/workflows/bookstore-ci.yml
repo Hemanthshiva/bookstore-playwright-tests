@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
           cache: 'npm'
 
       - name: Clean npm cache and remove lock files
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
           cache: 'npm'
 
       - name: Clean npm cache and remove lock files
@@ -113,7 +113,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report
-          path: playwright-tests/reports/cucumber/*.json
+          path: playwright-tests/reports/cucumber/cucumber-report.json
           if-no-files-found: warn
 
   deploy-reports:
@@ -221,7 +221,7 @@ jobs:
       - name: Setup Node for dashboard build
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
       - name: Build report dashboard
         run: |
