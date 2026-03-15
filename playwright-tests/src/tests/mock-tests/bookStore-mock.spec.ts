@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('BookStore API Mock Tests', () => {
-    // Use regex pattern for more flexible URL matching
-    const API_ENDPOINT_PATTERN = /api\/book/;
+    // Use regex pattern matching full HTTPS URL to the API endpoint
+    const API_ENDPOINT_PATTERN = /https:\/\/bookcart\.azurewebsites\.net\/api\/book/;
 
     // Helper function to set up fallback mock
     async function setupFallbackMock(page: any) {
@@ -36,7 +36,7 @@ test.describe('BookStore API Mock Tests', () => {
             }
         ];
 
-        // Mock API response
+        // Mock API response with correct full URL pattern
         await page.route(API_ENDPOINT_PATTERN, route => route.fulfill({
             status: 200,
             contentType: 'application/json',

@@ -46,11 +46,13 @@ export default defineConfig({
         // }
     ],
     webServer: {
-        // Uses the Angular dev server locally, but a fast static server in CI
-        command: process.env.CI
-            ? 'npx http-server ../dist/bookstore/browser -p 4200'
-            : 'npm run start',
+        // Use static HTTP server for both local and CI testing
+        // (faster, no SSR issues, consistent behavior)
+        command: 'npx http-server ../dist/bookstore/browser -p 4200 --gzip=false',
         port: 4200,
         reuseExistingServer: !process.env.CI,
+        timeout: 30000,
+        stdout: 'pipe',
+        stderr: 'pipe',
     },
 });
