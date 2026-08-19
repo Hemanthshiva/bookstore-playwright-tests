@@ -2,6 +2,7 @@
 
 # Compiled output
 /dist
+/playwright-tests/dist
 /tmp
 /out-tsc
 /bazel-out
@@ -9,6 +10,7 @@
 # Node
 node_modules/
 npm-debug.log
+debug.log
 yarn-error.log
 
 # IDEs and editors
@@ -36,6 +38,7 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+dashboard/*
 
 # System files
 .DS_Store

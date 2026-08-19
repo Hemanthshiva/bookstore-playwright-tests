@@ -14,5 +14,6 @@
         "Feature": {
             "before": ["@"]
         }
-    }
+    },
+    "compilets.autoStart": true
 }

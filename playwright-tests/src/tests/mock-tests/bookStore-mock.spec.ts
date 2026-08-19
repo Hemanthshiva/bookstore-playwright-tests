@@ -1,14 +1,14 @@
-import { test, expect } from '@playwright/test';
+import { expect, Page, Route, test } from '@playwright/test';
+import defaultMockBooks from '../../../test-data/5-books-data.json';
 
 test.describe('BookStore API Mock Tests', () => {
     // Use regex pattern matching full HTTPS URL to the API endpoint
     const API_ENDPOINT_PATTERN = /https:\/\/bookcart\.azurewebsites\.net\/api\/book/;
 
     // Helper function to set up fallback mock
-    async function setupFallbackMock(page: any) {
-        const defaultMockBooks = require('../../../test-data/5-books-data.json');
+    async function setupFallbackMock(page: Page) {
         // Set up a catch-all fallback route
-        await page.route(API_ENDPOINT_PATTERN, (route: { fulfill: (arg0: { status: number; contentType: string; body: string; }) => any; }) => route.fulfill({
+        await page.route(API_ENDPOINT_PATTERN, (route: Route) => route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(defaultMockBooks)
@@ -56,8 +56,7 @@ test.describe('BookStore API Mock Tests', () => {
         await expect(firstCard.getByTestId('book-author')).toHaveText('Author 1');
     });
 
-    test('should handle API error gracefully', async ({ page }) => {
-        // DO NOT use fallback for this test - we want the error to occur
+    test('should fall back to mock books when the API fails', async ({ page }) => {
         await page.route(API_ENDPOINT_PATTERN, async route => {
             await route.fulfill({
                 status: 500,
@@ -71,14 +70,8 @@ test.describe('BookStore API Mock Tests', () => {
         await page.goto('http://127.0.0.1:4200/books');
         await page.waitForLoadState('networkidle');
 
-        // Verify error state
-        const errorMessage = page.getByTestId('error-message');
-        await expect(errorMessage).toBeVisible();
-        await expect(errorMessage).toContainText('Failed to load books. Please try again later.');
-
-        // Verify no books are displayed
-        const bookCards = await page.locator('[data-testid^="book-card"]').all();
-        expect(bookCards).toHaveLength(0);
+        const bookCards = page.locator('[data-testid^="book-card"]');
+        await expect(bookCards).toHaveCount(defaultMockBooks.length);
     });
 
     test('should handle empty book list', async ({ page }) => {

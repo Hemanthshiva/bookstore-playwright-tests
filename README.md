@@ -1,340 +1,183 @@
-# 📚 Bookstore Application with Playwright Tests
+# Bookstore Application and Playwright Tests
 
-A simple and efficient bookstore catalog application built with Angular, designed to help users browse and find books easily.
+An Angular bookstore application with a React/Vite test-report dashboard and a Playwright+Cucumber end-to-end test suite.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
-![Angular](https://img.shields.io/badge/Angular-19.2.9-red.svg)
+## Prerequisites
 
-## 🌟 Features
+- Node.js 26.x
+- npm 12.x or compatible npm 11+
+- Git
+- Chromium, Firefox, and WebKit browsers installed through Playwright
 
-- **Book Catalog**
-  - View comprehensive list of books
-  - Detailed book information including title, author, and description
-  - Book cover images display
+The main application uses Angular 22. The Playwright package uses TypeScript 5.9 because it is required by `ts-node` 10.9.
 
-- **Search & Filter**
-  - Search books by title, author, or keywords
-  - Filter books by category
-  - Sort functionality for better organization
+## Repository Layout
 
-- **User Interface**
-  - Clean and intuitive design
-  - Responsive layout for all devices
-  - Easy navigation between book listings
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v18.x or higher)
-- npm (v9.x or higher)
-- Angular CLI (v19.2.9)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/bookstore.git
-   cd bookstore
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   ng serve
-   ```
-
-The application will be available at `http://127.0.0.1:4200/books`. The app will automatically reload if you change any of the source files.
-
-## 🛠️ Development
-
-### Project Structure
-
-```
-src/
-├── app/
-│   ├── components/    # Reusable UI components
-│   ├── services/     # Book service and data handling
-│   ├── models/       # Book and category interfaces
-│   └── pages/        # Main application pages
-├── assets/          # Static files (images, icons)
-└── environments/    # Environment configurations
+```text
+src/                         Angular bookstore application
+dashboard/                   React/Vite historical report dashboard
+playwright-tests/            Playwright and Cucumber test project
+playwright-tests/src/pages/  Page objects for SauceDemo scenarios
+playwright-tests/src/tests/  Cucumber features and mock Playwright tests
+playwright-tests/report-generator/
+                             Report and run-history utilities
+.github/workflows/           GitHub Actions build, test, and Pages deployment
 ```
 
-### Code Scaffolding
+## Install
 
-Generate new components, services, pipes, and more:
+From the repository root:
 
 ```bash
-ng generate component components/new-component
-ng generate service services/new-service
-ng generate pipe pipes/new-pipe
+npm ci
+cd dashboard
+npm ci
+cd ../playwright-tests
+npm ci
+npx playwright install chromium firefox webkit
 ```
 
-For a complete list of available schematics, run:
-```bash
-ng generate --help
-```
+Use `npm install` instead of `npm ci` when intentionally changing dependencies.
 
-### Building
+## Run the Application
 
-Build the project for different environments:
-
-```bash
-# Development build
-ng build
-
-# Production build
-ng build --configuration production
-```
-
-Build artifacts will be stored in the `dist/` directory.
-
-## 🧪 Testing
-
-### Unit Tests
-
-Run unit tests with Karma:
+From the repository root:
 
 ```bash
-ng test
+npm start
 ```
 
-### End-to-End Tests with Playwright
+Open `http://127.0.0.1:4200/books`.
 
-This project uses Playwright for end-to-end testing, providing reliable and fast testing across multiple browsers.
-
-#### Test Structure
-
-```
-src/
-├── pages/                      # Page Object Models
-│   ├── BasePage.ts            # Base page with common methods
-│   ├── CartPage.ts            # Shopping cart page actions
-│   ├── CheckoutPage.ts        # Checkout process actions
-│   ├── LoginPage.ts           # Login functionality
-│   └── ProductsPage.ts        # Product listing and details
-├── step-definitions/          # Cucumber step definitions
-│   └── saucedemo.steps.ts     # Step definitions for all test scenarios
-├── support/                   # Test support files
-│   ├── custom-world.ts        # Custom World context for Cucumber
-│   └── hooks.ts               # Before/After test hooks and setup
-└── tests/
-    ├── features/              # Cucumber feature files
-    │   ├── saucedemo.feature         # Core test scenarios    
-    │   ├── saucedemo-error.feature   # Error handling scenarios
-    │   └── saucedemo-latency.feature # Performance testing scenarios
-    └── mock-tests/           # Playwright mock tests
-        └── book-mock.spec.ts # API mocking tests
-```
-
-#### Running Tests
-
-Before running tests, install dependencies and Playwright browsers:
+Build the Angular application:
 
 ```bash
-npm install
-npx playwright install
+npm run build
+npm run build -- --configuration=production
 ```
 
-Run all tests:
-```bash
-# Run all tests (both feature and mock tests)
-npm run test:all
+The output is written to `dist/bookstore`. The Playwright mock tests use this built application and start a static server automatically.
 
-# Run all tests with debug logging
-npm run test:debug
-```
-
-Run feature tests:
-```bash
-# Run feature tests with default browser
-npm run test:features
-
-# Run feature tests with specific tags
-npm run test:features -- --tags "@smoke"
-
-# Run feature tests for specific browsers
-npm run test:chrome      # Chrome only
-npm run test:firefox     # Firefox only
-npm run test:webkit      # WebKit only
-
-# Run feature tests in headed mode
-npm run test:headed
-
-# Run feature tests with UI mode
-npm run test:ui
-```
-
-Run mock tests:
-```bash
-# Run API mock tests
-npm run test:mock
-
-# Run mock tests in debug mode
-npm run test:mock:debug
-
-# Run mock tests in UI mode
-npm run test:mock:ui
-```
-
-#### Test Reports
-
-Generate and view test reports:
+## Run the Dashboard
 
 ```bash
-# Generate all test reports
-npm run report:generate
-
-# Open HTML test report
-npm run report:open
-
-# Clean previous reports
-npm run report:clean
-
-# Generate and open reports in one command
-npm run report:all
+cd dashboard
+npm run dev
 ```
 
-#### Additional Scripts
-npm run check:types
+Other dashboard commands:
 
-# Lint check
+```bash
+npm run build
 npm run lint
-
-# Clean test reports
-npm run clean:reports
+npm run preview
 ```
 
-## 🔄 CI/CD Integration
+## Run Tests
 
-The project includes GitHub Actions workflows for continuous integration and deployment:
+The Playwright commands should be run from `playwright-tests`.
 
-### Automated Testing
+### TypeScript compilation
 
-- Runs on every push and pull request
-- Executes all test suites across multiple browsers
-- Generates and stores test reports as artifacts
-- Validates code quality and TypeScript compilation
-
-### Deployment
-
-- Automated deployment to staging environment on merge to develop branch
-- Production deployment triggered on release tags
-- Environment-specific configuration management
-- Build optimization for production
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.```bash
-# TypeScript compilation check
-npm run compile
-
-# Kill port 4200 (runs automatically after mock tests)
-npm run postmock
-```
-
-The HTML report includes:
-- Test execution summary
-- Test case details with steps
-- Screenshots of failures
-- Trace viewer for debugging
-- Performance metrics
-
-#### Configuration
-
-Playwright configuration is in `playwright.config.ts`:
-- Multiple browser support (Chromium, Firefox, WebKit)
-- Parallel test execution
-- Automatic screenshots on failure
-- Trace recording for debugging
-- Custom test timeout settings
-- Global setup and teardown hooks
-
-#### CI/CD Integration
-
-The project uses GitHub Actions for continuous integration and delivery. The pipeline is configured in `.github/workflows/bookstore-ci.yml`.
-
-##### Pipeline Structure
-
-The CI/CD pipeline consists of three main jobs:
-
-1. **Build and Test**
-   - Runs on Ubuntu latest
-   - Sets up Node.js 18.x environment
-   - Installs dependencies and Playwright browsers
-   - Builds the application
-   - Runs unit tests
-   - Uploads test coverage reports
-
-2. **Playwright Tests**
-   - Depends on successful build
-   - Runs in parallel using matrix strategy (3 shards)
-   - Executes both Playwright and Cucumber tests
-   - Supports multiple operating systems (currently Ubuntu)
-   - Uploads test results and reports
-
-3. **Test Report Publication**
-   - Combines all test results
-   - Generates a unified test report
-   - Publishes results using test-reporter
-   - Uploads combined report as artifact
-
-##### Trigger Events
-The pipeline runs on:
-- Push to main and develop branches
-- Pull requests to main and develop branches
-
-##### Test Artifacts
-The following artifacts are generated and stored:
-- Unit test results (coverage/)
-- Playwright test results (playwright-report/)
-- Test execution traces (test-results/)
-- Combined test report (test-report/)
-
-##### Dependencies Installation
 ```bash
-npm install
-npx playwright install
-npx playwright install-deps
+cd playwright-tests
+npm run compile
 ```
 
-## 📚 Documentation
+### Mock Playwright tests
 
-The application is built using Angular's best practices and follows a component-based architecture:
+These tests mock the bookstore API and use the Angular build served on port 4200.
 
-- Components are organized by feature
-- Services handle data management and API calls
-- Models define the structure of book and category data
-- Routing enables smooth navigation between views
+```bash
+npm run mock
+npm run mock:headed
+npm run mock:debug
+npm run mock:ui
+```
 
-## 🤝 Contributing
+### Cucumber feature tests
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+The feature tests run against SauceDemo.
 
-## 📄 License
+```bash
+npm run feature:chrome
+npm run feature:firefox
+npm run feature:webkit
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The default feature command uses the Chromium profile:
 
-## 🙏 Acknowledgments
+```bash
+npm run feature
+```
 
-- [Angular](https://angular.io/)
-- [Angular Material](https://material.angular.io/)
-- [RxJS](https://rxjs.dev/)
+Run sharded features with:
 
-## Additional Resources
+```bash
+npm run feature:shard
+```
 
-For more information on using Angular CLI, check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Run the complete suite
+
+```bash
+npm run test:all
+```
+
+This runs the mock tests followed by the default Cucumber feature suite.
+
+## Reports
+
+After tests have generated their JSON and Playwright report files:
+
+```bash
+npm run generate:cucumber-report
+npm run generate:playwright-report
+npm run generate:reports
+```
+
+Generated reports are written to:
+
+- `reports/cucumber-html-report/index.html`
+- `reports/playwright/index.html`
+
+The report generator uses the ESM API of `multiple-cucumber-html-reporter` and the report-copy script is implemented in Node.js, so report generation works on Windows and Linux.
+
+For run-history data used by the dashboard:
+
+```bash
+node report-generator/collect-stats.js \
+  --input reports/cucumber/cucumber-report.json \
+  --output reports/run-stats.json
+
+node report-generator/update-runs-index.js \
+  --stats reports/run-stats.json \
+  --index ../dashboard/public/runs-index.json
+```
+
+Generated reports, test results, caches, and build output are ignored by Git. Do not commit `node_modules`, `dist`, `.angular/cache`, `playwright-report`, `test-results`, or local report output.
+
+## CI/CD
+
+The workflow at `.github/workflows/bookstore-ci.yml` runs on pushes and pull requests targeting `main`.
+
+It:
+
+1. Installs root dependencies with `npm ci`.
+2. Builds the Angular application and runs Karma unit tests.
+3. Installs Playwright dependencies and runs the mock plus Cucumber tests.
+4. Generates Cucumber and Playwright report artifacts.
+5. Builds the dashboard and publishes versioned reports and run history to GitHub Pages.
+
+The workflow uses Node.js 26.x and preserves package lockfiles. For local parity, use `npm ci` in the root, `dashboard`, and `playwright-tests` directories.
+
+## Useful Configuration
+
+- Angular build and serve settings: `angular.json`
+- Playwright projects, browser settings, and web server: `playwright-tests/playwright.config.ts`
+- Cucumber profiles and report formats: `playwright-tests/config/cucumber.js`
+- Cucumber hooks and browser lifecycle: `playwright-tests/src/support/hooks.ts`
+- Dashboard data source: `dashboard/public/runs-index.json`
+
+## License
+
+This project is licensed under the ISC license declared in `playwright-tests/package.json`.

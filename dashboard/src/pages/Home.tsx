@@ -12,8 +12,6 @@ export function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
     fetchRunsIndex()
       .then((data) => {
         if (!cancelled) setRuns(Array.isArray(data) ? data : []);

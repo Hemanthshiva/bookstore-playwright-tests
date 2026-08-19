@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../shared/material.module';
@@ -15,6 +15,7 @@ import { BookService } from '../../service/book.service';
     MaterialModule
   ],
   templateUrl: './book-details.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./book-details.component.scss']
 })
 export class BookDetailsComponent {

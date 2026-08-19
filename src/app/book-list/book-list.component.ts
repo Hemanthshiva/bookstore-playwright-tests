@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../shared/material.module';
 import { PageEvent } from '@angular/material/paginator';
@@ -12,12 +12,12 @@ import { BookService } from '../../service/book.service';
   selector: 'app-book-list',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     MaterialModule,
     FormsModule
-  ],
+],
   templateUrl: './book-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./book-list.component.scss']
 })
 export class BookListComponent implements OnInit, OnDestroy {

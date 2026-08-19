@@ -1,5 +1,4 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { runReportHref } from '../api';
 import type { RunEntry } from '../types';
 
@@ -10,12 +9,7 @@ interface Props {
 export function RunDetail({ runs }: Props) {
   const { runId } = useParams<{ runId: string }>();
   const run = runs.find((r) => r.runId === runId);
-  const [stats, setStats] = useState<RunEntry | null>(null);
-
-  useEffect(() => {
-    if (!run) return;
-    setStats(run);
-  }, [run]);
+  const stats = run;
 
   if (!run) {
     return (

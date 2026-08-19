@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BookDetailsComponent } from './book-details.component';
 import { BookService } from '../../service/book.service';
@@ -32,7 +32,7 @@ describe('BookDetailsComponent', () => {
       ],
       providers: [
         provideRouter(routes),
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideAnimations(),
         { 
           provide: ActivatedRoute, 

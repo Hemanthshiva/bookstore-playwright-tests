@@ -25,22 +25,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # FIX 1: Changed to 22.x (Current LTS supported by Angular 19)
-          node-version: '22.x'
+          node-version: '26.x'
           cache: 'npm'
 
-      - name: Clean npm cache and remove lock files
-        run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json .angular
-          cd playwright-tests
-          rm -rf node_modules package-lock.json .angular
-
       - name: Install Dependencies
-        run: |
-          npm install
-          npm install -g @angular/cli@19.2.9
-          npm install @rollup/rollup-linux-x64-gnu
+        run: npm ci
 
       - name: Build Application
         run: npm run build -- --configuration=production --output-mode=static --no-server
@@ -57,7 +46,6 @@ jobs:
           node -e "const config = JSON.parse(require('fs').readFileSync('angular.json', 'utf8')); const buildConfig = config.projects.bookstore.architect.build.defaultConfiguration; console.log('Build defaultConfiguration:', buildConfig); if (buildConfig !== 'development') { console.error('Error: defaultConfiguration is not set to development'); process.exit(1); }"
 
       - name: Run Unit Tests
-        # FIX 2: Changed --no-watch to --watch=false, and used npx directly to prevent argument escaping issues
         run: npx ng test --watch=false --code-coverage --browsers=ChromeHeadless
 
       - name: Upload Unit Test Results
@@ -78,29 +66,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # Changed to 22.x to match build job
-          node-version: '22.x'
+          node-version: '26.x'
           cache: 'npm'
 
-      - name: Clean npm cache and remove lock files
-        run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json .angular
-          cd playwright-tests
-          rm -rf node_modules package-lock.json .angular
-
       - name: Install Root Dependencies
-        run: |
-          npm install
-          npm install -g @angular/cli@19.2.9
-          npm install @rollup/rollup-linux-x64-gnu
+        run: npm ci
 
       - name: Install Playwright Dependencies
         working-directory: playwright-tests
         run: |
-          npm install
+          npm ci
           npx playwright install --with-deps chromium
-          npm install -g @playwright/test
 
       - name: Download Production Build
         uses: actions/download-artifact@v4
@@ -113,8 +89,6 @@ jobs:
         env:
           PLAYWRIGHT_REUSE_SERVER: "true"
         run: |
-          mkdir -p reports/cucumber
-          mkdir -p reports/playwright
           npm run test:all
 
       - name: Upload Playwright HTML Report
@@ -168,32 +142,11 @@ jobs:
           ls -R test-reports/
 
       - name: Generate Cucumber HTML Report
+        env:
+          CUCUMBER_JSON_DIR: test-reports/cucumber
+          CUCUMBER_REPORT_PATH: test-reports/cucumber
         run: |
-          npm install cucumber-html-reporter
-          
-          cat > generate-report.js << 'EOL'
-          const reporter = require('cucumber-html-reporter');
-          
-          const options = {
-            theme: 'bootstrap',
-            jsonFile: 'test-reports/cucumber/cucumber-report.json',
-            output: 'test-reports/cucumber/index.html',
-            reportSuiteAsScenarios: true,
-            scenarioTimestamp: true,
-            launchReport: false,
-            metadata: {
-              "Test Environment": "CI/CD Pipeline",
-              "Browser": "Chrome",
-              "Platform": "Ubuntu-Latest",
-              "Executed": new Date().toISOString()
-            }
-          };
-          
-          console.log('Generating report from: test-reports/cucumber/cucumber-report.json');
-          reporter.generate(options);
-          EOL
-          
-          node generate-report.js
+          node playwright-tests/report-generator/cucumber-report.js
 
       - name: Fetch gh-pages branch for report history
         run: git fetch origin gh-pages || true
@@ -228,8 +181,7 @@ jobs:
       - name: Setup Node for dashboard build
         uses: actions/setup-node@v4
         with:
-          # Match Node 22.x here too
-          node-version: '22.x'
+          node-version: '26.x'
 
       - name: Build report dashboard
         run: |
