@@ -46,9 +46,8 @@ export default defineConfig({
         // }
     ],
     webServer: {
-        // Use static HTTP server for both local and CI testing
-        // (faster, no SSR issues, consistent behavior)
-        command: 'npx http-server ../dist/bookstore/browser -p 4200 --gzip=false',
+        // Serve the static build with SPA fallback for routes such as /books.
+        command: 'node scripts/static-server.js ../dist/bookstore/browser 4200',
         port: 4200,
         reuseExistingServer: !process.env.CI,
         timeout: 30000,
