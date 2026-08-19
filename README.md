@@ -1,3 +1,4 @@
+[![Bookstore WebApp CI/CD Pipeline](https://github.com/Hemanthshiva/bookstore-playwright-tests/actions/workflows/bookstore-ci.yml/badge.svg)](https://github.com/Hemanthshiva/bookstore-playwright-tests/actions/workflows/bookstore-ci.yml)
 # Bookstore Application and Playwright Tests
 
 An Angular bookstore application with a React/Vite test-report dashboard and a Playwright+Cucumber end-to-end test suite.
