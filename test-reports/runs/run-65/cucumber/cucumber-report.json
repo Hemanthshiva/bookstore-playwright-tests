@@ -1,0 +1,909 @@
+[
+  {
+    "description": "",
+    "elements": [
+      {
+        "description": "",
+        "id": "error-validation-for-errors-user-login-on-saucedemo;verify-the-an-error-pop-up-is-displayed-when-user-tries-to-sort-products",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Verify the an error pop up is displayed when user tries to sort products",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 47825104
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 301499698
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 176567591
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am logged in as \"error_user\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:67"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 22381511
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 8,
+            "name": "I should be on the products page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:74"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 164563521
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 9,
+            "name": "I sort products by \"Price (low to high)\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:98"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 1254712
+            },
+            "arguments": [
+              {
+                "rows": [
+                  {
+                    "cells": [
+                      "Sorting is broken! This error has been reported to Backtrace."
+                    ]
+                  }
+                ]
+              }
+            ],
+            "keyword": "Then ",
+            "line": 10,
+            "name": "A popup is displayed with the below error message",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:260"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 8028569
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "error-validation-for-errors-user-login-on-saucedemo;error-user-can-only-add-some-items-to-cart",
+        "keyword": "Scenario",
+        "line": 14,
+        "name": "Error user can only add some items to cart",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 33902646
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 165759301
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 162401702
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 15,
+            "name": "I am logged in as \"error_user\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:67"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 214804087
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 16,
+            "name": "I try to add all items to the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:267"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 4976362
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 17,
+            "name": "Only 3 items should be added to the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:272"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 4590027
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "error-validation-for-errors-user-login-on-saucedemo",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Error Validation for Errors User Login on SauceDemo",
+    "tags": [],
+    "uri": "src/tests/features/saucedemo-error.feature"
+  },
+  {
+    "description": "",
+    "elements": [
+      {
+        "description": "",
+        "id": "extended-sauce-demo-functionality;login-with-different-user-types",
+        "keyword": "Scenario Outline",
+        "line": 14,
+        "name": "Login with different user types",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 32586639
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 160153905
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 30074086
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 7,
+            "name": "I enter username \"locked_out_user\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:26"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 11830891
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "I enter password \"secret_sauce\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:31"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 49094562
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 9,
+            "name": "I click on the login button",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:35"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 7599167
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 10,
+            "name": "I should verify \"Epic sadface: Sorry, this user has been locked out.\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:39"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 11756443
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "extended-sauce-demo-functionality;verify-performance_glitch_user-basic-functionality",
+        "keyword": "Scenario",
+        "line": 18,
+        "name": "Verify performance_glitch_user basic functionality",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 28978313
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 162199695
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 5169303159
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 19,
+            "name": "I am logged in as \"performance_glitch_user\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:67"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 20145320
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 20,
+            "name": "I should be on the products page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:74"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 6540052
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 21,
+            "name": "I should see the inventory list",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:232"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 10122835639
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "I should be able to view product details",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:238"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 5159768328
+            },
+            "arguments": [],
+            "keyword": "But ",
+            "line": 23,
+            "name": "sorting functionality may be limited",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:244"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 7694329
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [
+          {
+            "name": "@performance",
+            "line": 17
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "extended-sauce-demo-functionality",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Extended Sauce Demo Functionality",
+    "tags": [],
+    "uri": "src/tests/features/saucedemo-latency.feature"
+  },
+  {
+    "description": "",
+    "elements": [
+      {
+        "description": "",
+        "id": "sauce-demo-basic-functionality;successful-login-with-valid-credentials",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Successful login with valid credentials",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 33272984
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 164596825
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 37012231
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 7,
+            "name": "I enter username \"standard_user\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:26"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 9091985
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "I enter password \"secret_sauce\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:31"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 79098814
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 9,
+            "name": "I click on the login button",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:35"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 17697468
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 10,
+            "name": "I should be on the products page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:74"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 6943848
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "sauce-demo-basic-functionality;add-item-to-cart-and-complete-checkout",
+        "keyword": "Scenario",
+        "line": 12,
+        "name": "Add item to cart and complete checkout",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 31632504
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 162895244
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 181602779
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 13,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:58"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 29843376
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 14,
+            "name": "I add an item to the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:80"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 36712095
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 15,
+            "name": "I click on the shopping cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:84"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 2471183
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 16,
+            "name": "I should see the item in my cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:88"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 46231687
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 17,
+            "name": "I proceed to checkout",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:162"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 21306757
+            },
+            "arguments": [
+              {
+                "rows": [
+                  {
+                    "cells": [
+                      "FirstName",
+                      "LastName",
+                      "ZipCode"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "John",
+                      "Doe",
+                      "12345"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "keyword": "And ",
+            "line": 18,
+            "name": "I enter shipping information",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:167"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 47526689
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 21,
+            "name": "I click continue",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:173"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 31350451
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "I click finish",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:177"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 3189976
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 23,
+            "name": "I should see the order confirmation",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:181"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 6377672
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "sauce-demo-basic-functionality;add-and-verify-item-in-cart",
+        "keyword": "Scenario",
+        "line": 25,
+        "name": "Add and verify item in cart",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 31446069
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 159379892
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 185197921
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 26,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:58"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 27347487
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 27,
+            "name": "I add an item to the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:80"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 37022320
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 28,
+            "name": "I click on the shopping cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:84"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 1932832
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 29,
+            "name": "I should see the item in my cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:88"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 2782460
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 30,
+            "name": "the cart badge should show \"1\"",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:93"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 5809127
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "sauce-demo-basic-functionality;remove-item-from-cart",
+        "keyword": "Scenario",
+        "line": 32,
+        "name": "Remove item from cart",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 30437211
+            },
+            "keyword": "Before",
+            "hidden": true
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 155525122
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I am on the Sauce Demo login page",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:20"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 187084567
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 33,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:58"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 28223988
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 34,
+            "name": "I have an item in the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:187"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 36917138
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 35,
+            "name": "I click on the shopping cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:84"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 28918411
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 36,
+            "name": "I remove the item from the cart",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:191"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 2330409
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 37,
+            "name": "the cart should be empty",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:196"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 1974478
+            },
+            "arguments": [],
+            "keyword": "And ",
+            "line": 38,
+            "name": "the cart badge should not be visible",
+            "match": {
+              "location": "src/step-definitions/saucedemo.steps.ts:200"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 5143395
+            },
+            "keyword": "After",
+            "hidden": true
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "sauce-demo-basic-functionality",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Sauce Demo Basic Functionality",
+    "tags": [],
+    "uri": "src/tests/features/saucedemo.feature"
+  }
+]

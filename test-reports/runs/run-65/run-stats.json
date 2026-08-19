@@ -1,0 +1,58 @@
+{
+  "stats": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "id": "Error Validation for Errors User Login on SauceDemo → Verify the an error pop up is displayed when user tries to sort products",
+      "feature": "Error Validation for Errors User Login on SauceDemo",
+      "scenario": "Verify the an error pop up is displayed when user tries to sort products",
+      "status": "passed"
+    },
+    {
+      "id": "Error Validation for Errors User Login on SauceDemo → Error user can only add some items to cart",
+      "feature": "Error Validation for Errors User Login on SauceDemo",
+      "scenario": "Error user can only add some items to cart",
+      "status": "passed"
+    },
+    {
+      "id": "Extended Sauce Demo Functionality → Login with different user types",
+      "feature": "Extended Sauce Demo Functionality",
+      "scenario": "Login with different user types",
+      "status": "passed"
+    },
+    {
+      "id": "Extended Sauce Demo Functionality → Verify performance_glitch_user basic functionality",
+      "feature": "Extended Sauce Demo Functionality",
+      "scenario": "Verify performance_glitch_user basic functionality",
+      "status": "passed"
+    },
+    {
+      "id": "Sauce Demo Basic Functionality → Successful login with valid credentials",
+      "feature": "Sauce Demo Basic Functionality",
+      "scenario": "Successful login with valid credentials",
+      "status": "passed"
+    },
+    {
+      "id": "Sauce Demo Basic Functionality → Add item to cart and complete checkout",
+      "feature": "Sauce Demo Basic Functionality",
+      "scenario": "Add item to cart and complete checkout",
+      "status": "passed"
+    },
+    {
+      "id": "Sauce Demo Basic Functionality → Add and verify item in cart",
+      "feature": "Sauce Demo Basic Functionality",
+      "scenario": "Add and verify item in cart",
+      "status": "passed"
+    },
+    {
+      "id": "Sauce Demo Basic Functionality → Remove item from cart",
+      "feature": "Sauce Demo Basic Functionality",
+      "scenario": "Remove item from cart",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Reports</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .report-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 4px; }
+        .report-link { display: block; padding: 15px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; text-align: center; margin: 10px 0; }
+        .report-link:hover { background: #0056b3; }
+        h2 { color: #444; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Reports</h1>
+        <div class="report-section">
+            <h2>Report dashboard (last 10 runs, flaky & failing)</h2>
+            <a class="report-link" href="./dashboard/">Open dashboard</a>
+        </div>
+        <div class="report-section">
+            <h2>Playwright report (latest run)</h2>
+            <a class="report-link" href="./playwright/index.html">View Playwright Report</a>
+        </div>
+        <div class="report-section">
+            <h2>Cucumber reports (per run)</h2>
+            <a class="report-link" href="./dashboard/">View runs in dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
