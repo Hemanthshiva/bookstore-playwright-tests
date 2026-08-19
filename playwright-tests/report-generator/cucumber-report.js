@@ -49,7 +49,7 @@ validateAndFixJsonFiles(jsonDir);
   const { generate } = await import("multiple-cucumber-html-reporter");
 
   await generate({
-    jsonDir: path.join(__dirname, "..", "reports", "cucumber"),
+    jsonDir: reportsDir,
     reportPath,
     metadata: {
       browser: {
